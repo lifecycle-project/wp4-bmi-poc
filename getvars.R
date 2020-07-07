@@ -12,13 +12,7 @@ library(purrr)
 library(dplyr)
 library(magrittr)
 library(tidyr)
-library(stringr)
-
-source("~/ds-cs-functions/cs-class-discrepancy.R")
-source("~/ds-cs-functions/cs-any-var-exists.R")
-source("~/ds-cs-functions/cs-find-vars-index.R")
-source("~/ds-cs-functions/cs-rm-lots.R")
-source("~/ds-cs-functions/cs-rename-vars.R")
+library(dsHelper)
 
 # This command is useful as it lists functionality currently available in DS.
 ls("package:dsBaseClient")
@@ -76,23 +70,25 @@ cohorts_tables <- bind_rows(
       "lc_raine_core_2_0.2_0_core_1_0_monthly_rep",
       "lc_raine_core_2_0.2_0_core_1_0_yearly_rep")),
   tibble(
+    opal_name = "gecko",
+    table = c(
+      "lc_gecko_core_2_1.2_1_core_1_1_non_rep",
+      "lc_gecko_core_2_1.2_1_core_1_1_monthly_rep",
+      "lc_gecko_core_2_1.2_1_core_1_1_yearly_rep")),
+  tibble(
+    opal_name = "chop",
+    table = c(
+      "lc_chop_core_2_1.2_1_core_non_rep_bmi_earlylife_poc",
+      "lc_chop_core_2_1.2_1_core_monthly_rep_bmi_earlylife_poc",
+      "lc_chop_core_2_1.2_1_core_yearly_rep_bmi_earlylife_poc")),
+  tibble(
     opal_name = "moba",
     table = c(
       "lc_moba_core_2_0.2_0_core_non_rep_bmi_poc_study",
       "lc_moba_core_2_0.2_0_core_monthly_rep_bmi_poc_study",
       "lc_moba_core_2_0.2_0_core_yearly_rep_bmi_poc_study"))) %>%
-  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 4))
+  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 6))
          
-  
-  
-  #gecko = data.frame(
-  #  opal_name = "gecko",
-  #  wp1_nrm = "lc_gecko_core_2_0.2_0_core_1_0_non_rep",
-  #  wp1_mrm = "lc_gecko_core_2_0.2_0_core_1_0_monthly_rep",
-  #  wp1_yrm = "lc_gecko_core_2_0.2_0_core_1_0_yearly_rep",
-  #  stringsAsFactors = FALSE)
-  
-
 ## ---- Assign tables ----------------------------------------------------------
 cohorts_tables %>%
   filter(opal_name != "raine") %>%
@@ -144,9 +140,12 @@ cs.classDescrepancy(
   vars = nonrep.vars)
 
 cs.classDescrepancy(
+  df = "monthrep", 
+  vars = monthrep.vars)
+
+cs.classDescrepancy(
   df = "yearrep", 
   vars = yearrep.vars)
-
 
 ## ---- Fix problem variables --------------------------------------------------
 
@@ -156,11 +155,12 @@ cs.classDescrepancy(
 ## Non-repeated
 ds.asFactor("nonrep$ethn3_m", newobj.name = "ethn3_m_rev")
 ds.asInteger("nonrep$ga_bj", newobj = "ga_bj_rev")
+ds.asInteger("nonrep$ga_us", newobj = "ga_us_rev")
 
 names(opals) %>%
   map(
     ~ds.dataFrame(
-      x= c("nonrep", "ethn3_m_rev", "ga_bj_rev"), 
+      x= c("nonrep", "ethn3_m_rev", "ga_bj_rev", "ga_us_rev"), 
       newobj = "nonrep", 
       datasources = opals[.])
   )
@@ -179,13 +179,16 @@ names(opals) %>%
 ## Check this has worked
 cs.classDescrepancy(
   df = "nonrep", 
-  vars = c("ethn3_m_rev", "ga_bj_rev"))
+  vars = c("ethn3_m_rev", "ga_bj_rev", "ga_us_rev"))
 
 cs.classDescrepancy(
   df = "yearrep", 
   vars = c("greenyn300_rev_", "areases_tert_rev_"))
 
-cs.rmLots(c("areases_tert_rev_", "ethn3_m_rev", "ga_bj_rev", "greenyn300_rev_"))
+cs.tidyEnv(
+  obj = c("areases_tert_rev_", "ethn3_m_rev", "ga_bj_rev", "greenyn300_rev_", 
+          "ga_us_rev"), 
+  type = "remove")
 
 
 ################################################################################
@@ -247,8 +250,10 @@ names(opals) %>%
     datasources = opals[.])
 )
 
-cs.classDescrepancy(df_name = "nonrep_2")
-cs.rmLots(c("ga_all", "prepreg_bmi", "parity_bin"))
+cs.classDescrepancy(df = "nonrep_2")
+cs.tidyEnv(
+  obj = c("ga_all", "prepreg_bmi", "parity_bin"), 
+  type = "remove")
 
 
 ################################################################################
@@ -266,7 +271,6 @@ ds.subset(
 ## ---- Convert to wide format -------------------------------------------------
 
 # For the actual analysis we will want our dataset to be in wide format 
-
 ds.reShape(
   data.name = "baseline_vars",
   timevar.name = "age_years",
@@ -285,7 +289,7 @@ ds.reShape(
 # cut which creates the new variables using information provided in a table and
 # joins these together in a dataframe.
 
-## First create a list with old and new variable names
+## First create a dataframe with old and new variable names
 old_new <- tribble(
   ~oldvar, ~newvar,
   "edu_f1_.0", "edu_f",
@@ -299,19 +303,7 @@ old_new <- tribble(
 ## Now rename them
 cs.renameVars(
   df = "baseline_wide", 
-  names = old_new,
-  new_df_name = "baseline_renamed")
-
-## Merge back in
-names(opals) %>%
-  map(
-    ~ds.dataFrame(
-    x = c("baseline_wide", "baseline_renamed"),
-    newobj = "baseline_wide_2",
-    datasources = opals[.]
-    ))
-
-old_new %>% pull(newvar) %>% cs.rmLots
+  names = old_new)
 
 ################################################################################
 # 5. Calculate BMI scores from monthly repeated measures data
@@ -416,8 +408,6 @@ bmi_available <-map_dfr(
     mutate(cohort = names(opals)) %>%
     select(cohort, everything())
 
-bmi_available
-
 
 ## ---- Create a new table listing which subsets to create ---------------------
 bmi_to_subset <- bmi_available %>%
@@ -444,7 +434,7 @@ bmi_to_subset %>%
       datasources = opals[cohort])
   })
 
-ds.ls()
+
 ## ---- Sort subsets by age ----------------------------------------------------
 
 # This next step sorts the subsets by age (youngest first). This is required
@@ -470,6 +460,9 @@ ds.dataFrameSort(
   sort.descending = FALSE, 
   datasources = opals["genr"])
 
+ds.summary("bmi_0_24_sub")
+ds.summary("bmi_0_24_sub$age_months")
+
 ## Doesn't work for some reason
 
 ## ---- Create new variables indicating the age category -----------------------
@@ -483,7 +476,7 @@ ds.dataFrameSort(
 # way I can find to do this is quite clunky but it works.
 bmi_to_subset %<>%
   mutate(value = str_extract(varname, '[^_]+$'), 
-         age_cat_name = paste0(new_subset_name, "_age_cat"))
+         age_cat_name = paste0(new_subset_name, "_age"))
   
 bmi_to_subset %>%
   pmap(
@@ -533,7 +526,7 @@ bmi_to_subset %>%
 ## ---- First we merge the non repeated and yearly repeated --------------------
 ds.merge(
   x.name = "nonrep_2",
-  y.name = "baseline_wide_2",
+  y.name = "baseline_wide",
   by.x.names = "child_id",
   by.y.names = "child_id",
   all.x = TRUE,
@@ -581,12 +574,12 @@ other.vars <- c("age_months.24", "age_months.48", "age_months.96",
 
 
 ## ---- Now we create vars indicating whether any non-missing values are present
-cs.anyVarExists(
+cs.subjHasData(
   df = "bmi_poc", 
   vars = exp.vars, 
   new_label = "exposure")
 
-cs.anyVarExists(
+cs.subjHasData(
   df = "bmi_poc", 
   vars = out.vars, 
   new_label = "outcome")
@@ -613,27 +606,31 @@ keep_vars <- c(exp.vars, out.vars, cov.vars, other.vars)
 
 
 ## ---- Drop variables we don't need -------------------------------------------
-var_index <- names(opals) %>%
-  map(
-    ~cs.findVarsIndex(
+var_index <- cs.findVarsIndex(
       df = "bmi_poc", 
-      vars = keep_vars, 
-      cohorts = .))
+      vars = keep_vars)
 
 ## Now finally we subset based on valid cases and required variables
 var_index %>%
   imap(
-    ~ds.dataFrameSubset(df.name = "bmi_poc", 
-     V1.name = "valid_case", 
-     V2.name = "1", 
-     Boolean.operator = "==", 
-     keep.cols = .x,
-     keep.NAs = FALSE, 
-     newobj = "analysis_df", 
-     datasources = opals[.y]))
+    ~ds.dataFrameSubset(
+      df.name = "bmi_poc", 
+      V1.name = "valid_case", 
+      V2.name = "1", 
+      Boolean.operator = "==", 
+      keep.cols = .x,
+      keep.NAs = FALSE, 
+      newobj = "analysis_df", 
+      datasources = opals[.y]))
 
 
 ## ---- Check that this has worked ok ------------------------------------------
 ds.summary("bmi_poc")
 ds.summary("analysis_df")
+
+datashield.workspace_save(opals, "sortedvars")
+
+cs.tidyEnv(obj = "analysis_df", type = "keep")
+
+ds.ls()
 
