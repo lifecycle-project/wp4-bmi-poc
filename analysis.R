@@ -16,7 +16,7 @@ require(magrittr)
 ## Call the function I wrote to get the stats in a useful form
 source("~/ds-cs-functions/cs-get-stats.R")
 
-
+opals <- datashield.login(all.logdata, restore = "final_df")
 ################################################################################
 # 1. Descriptives  
 ################################################################################
@@ -25,7 +25,7 @@ source("~/ds-cs-functions/cs-get-stats.R")
 
 # Now we extract descriptives using the function "getStats" which I wrote.
 
-descriptives_ss <- cs.getStats(
+descriptives_ss <- dh.getStats(
    df = "analysis_df",
    vars = c(exp.vars, out.vars, cov.vars, other.vars)
 )
@@ -64,6 +64,10 @@ regWrap <- function(x){
 }
 
 ds.summary("analysis_df$greenyn300")
+
+
+ds.summary("analysis_df$bmi.24")
+
 ds.class("analysis_df$greenyn300")
 
 # Now we apply this function to each exposure
@@ -74,8 +78,9 @@ ds.class("analysis_df$greenyn300")
 
 ## ---- Check available data ---------------------------------------------------
 descriptives_ss[[2]] %>%
-  filter(variable == "age_months.24" | variable == "age_months.48" | 
-         variable == "age_months.96")
+  filter(variable == "age.24" | variable == "age.48" | variable == "age.96" | 
+         variable == "age.168") %>%
+  print(n = 200)
 
 ## NOTE THAT MOBA DOES HAVE DATA AT AGE 48; HOWEVER THE SD OF THE AGE VARIABLE
 ## IS ZERO WHICH IS STOPPING THE MODEL FROM RUNNING
