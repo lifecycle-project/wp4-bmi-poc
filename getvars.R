@@ -13,8 +13,8 @@ library(dplyr)
 library(magrittr)
 library(tidyr)
 library(stringr)
-library(remotes)
-install_github("lifecycle-project/ds-helper")
+#library(remotes)
+#install_github("lifecycle-project/ds-helper")
 library(dsHelper)
 
 # This command is useful as it lists functionality currently available in DS.
@@ -94,7 +94,6 @@ cohorts_tables <- bind_rows(
          
 ## ---- Assign tables ----------------------------------------------------------
 cohorts_tables %>%
-  filter(opal_name!= "chop") %>%
   pwalk(function(opal_name, table, type){
   
   datashield.assign(
@@ -235,42 +234,10 @@ names(opals) %>%
     datasources = opals[.])
 )
 
-dh.classDescrepancy(df = "nonrep_2")
 dh.tidyEnv(
   obj = c("ga_all", "prepreg_bmi", "parity_bin"), 
   type = "remove")
 
-
-## ---- Age at measurement -----------------------------------------------------
-
-# I don't currently have access to the INMA age variable from the monthrep 
-# table. I will use "height_age" instead for now.
-
-ds.assign(
-  toAssign = "monthrep$age_months", 
-  newobj = "age_months_all",
-  datasources = opals[opals!="inma"]
-)
-
-ds.assign(
-  toAssign = "monthrep$height_age/30.4368", 
-  newobj = "age_months_all",
-  datasources = opals[opals="inma"]
-)
-
-names(opals) %>%
-  map(
-    ~ds.dataFrame(
-      x = c("monthrep", "age_months_all"),
-      newobj = "monthrep_2", 
-      datasources = opals[.])
-  )
-
-ds.summary("monthrep_2$age_months_all")
-
-dh.tidyEnv(
-  obj = "age_months_all", 
-  type = "remove")
 
 ################################################################################
 # 4. Create baseline variables from yearly repeated tables
@@ -335,27 +302,31 @@ ds.assign(
 names(opals) %>%
   map(
     ~ds.dataFrame(
-      x = c('bmi', 'monthrep_2'), 
-      newobj = 'monthrep_2',
+      x = c('bmi', 'monthrep'), 
+      newobj = 'monthrep',
       datasources = opals[.]
       )
   )
 
 ds.rm("bmi")
 
-datashield.workspace_save(opals, "df_04_08_20")
+datashield.workspace_save(opals, "df_26_08_20")
 
-opals <- datashield.login(all.logdata, restore = "df_04_08_20")
+opals <- datashield.login(all.logdata, restore = "df_26_08_20")
+
+ds.ls()
 
 ################################################################################
 # 6. Create BMI variables corresponding to age brackets 
 ################################################################################
 dh.makeOutcome(
-  df = "monthrep_2", 
+  df = "monthrep", 
   outcome = "bmi", 
-  age_var = "age_months_all", 
+  age_var = "age_months", 
   bands = c(0, 24, 25, 48, 49, 96, 97, 168, 169, 215), 
   mult_action = "earliest")
+
+ds.summary("bmi_derived")
 
 ds.dataFrameFill("bmi_derived", "bmi_derived_2")
 
@@ -404,7 +375,7 @@ out.vars <- c("bmi.24", "bmi.48", "bmi.96", "bmi.168")
 cov.vars <- c("sex", "preg_smk_rev", "preg_ht_rev", "parity_bin", "ethn3_m_rev", 
               "height_m", "prepreg_bmi", "agebirth_m_y", "areases_tert")
 
-other.vars <- c("age.24", "age.48", "age.96", "age.168")
+other.vars <- c("age.24", "age.48", "age.96", "age.168", "age.215")
 
 
 ## ---- Now we create vars indicating whether any non-missing values are present
@@ -418,7 +389,6 @@ dh.subjHasData(
   vars = out.vars, 
   new_label = "outcome")
 
-ds.summary("n_outcome")
 ## ---- Next create another variable indicating whether a valid case -----------
 ds.make(
   toAssign = "any_exposure+any_outcome", 
@@ -433,13 +403,9 @@ ds.Boole(
 
 ## Check how many valid cases to make sure it's plausible
 ds.summary("valid_case")
-ds.summary("any_exposure")
-ds.summary("any_outcome")
-
 
 ## ---- Now we create a vector of all the variables we want to keep ------------
 keep_vars <- c(exp.vars, out.vars, cov.vars, other.vars)
-
 
 ## ---- Drop variables we don't need -------------------------------------------
 var_index <- dh.findVarsIndex(
@@ -464,10 +430,12 @@ var_index %>%
 ds.summary("bmi_poc")
 ds.summary("analysis_df")
 
+datashield.workspace_save(opals, "final_df_26_08_20")
+
 dh.tidyEnv(obj = "analysis_df", type = "keep")
 
-datashield.workspace_save(opals, "final_df")
-opals <- datashield.login(all.logdata, restore = "final_df")
+datashield.workspace_save(opals, "final_df_26_08_20_clean")
+opals <- datashield.login(all.logdata, restore = "final_df_26_08_20_clean")
 
 ds.ls()
 
