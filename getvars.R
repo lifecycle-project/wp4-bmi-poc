@@ -314,8 +314,26 @@ datashield.workspace_save(opals, "df_26_08_20")
 
 opals <- datashield.login(all.logdata, restore = "df_26_08_20")
 
-ds.ls()
+################################################################################
+# 6. Create cohort dummy  
+################################################################################
+ds.summary("nonrep$cohort_id")
 
+coh_dummy <- tibble(
+  cohort = c("moba_dummy", "raine_dummy", "ninfea_dummy", "gecko_dummy", 
+             "inma_dummy", "chop_dummy"),
+  value = c(110, 117, 103, 108, 102, 116))
+
+coh_dummy %>%
+  pmap(function(cohort, value){
+    ds.Boole(
+      V1 = "nonrep$cohort_id", 
+      V2 = value,
+      Boolean.operator = "==",
+      numeric.output = TRUE, 
+      na.assign = "NA", 
+      newobj = cohort)
+  })
 ################################################################################
 # 6. Create BMI variables corresponding to age brackets 
 ################################################################################
@@ -354,6 +372,17 @@ ds.merge(
   newobj = "bmi_poc"
 )
 
+## ---- Now add in the cohort dummy variables ----------------------------------
+names(opals) %>%
+  map(
+    ~ds.dataFrame(
+      x = c('bmi_poc', coh_dummy$cohort), 
+      newobj = 'bmi_poc',
+      datasources = opals[.]
+    )
+  )
+
+
 ## ---- Create blank columns where data not available --------------------------
 ds.dataFrameFill("bmi_poc", "bmi_poc")
 
@@ -375,7 +404,7 @@ out.vars <- c("bmi.24", "bmi.48", "bmi.96", "bmi.168")
 cov.vars <- c("sex", "preg_smk_rev", "preg_ht_rev", "parity_bin", "ethn3_m_rev", 
               "height_m", "prepreg_bmi", "agebirth_m_y", "areases_tert")
 
-other.vars <- c("age.24", "age.48", "age.96", "age.168", "age.215")
+other.vars <- c("age.24", "age.48", "age.96", "age.168", "age.215", coh_dummy$cohort)
 
 
 ## ---- Now we create vars indicating whether any non-missing values are present
@@ -435,7 +464,3 @@ datashield.workspace_save(opals, "final_df_26_08_20")
 dh.tidyEnv(obj = "analysis_df", type = "keep")
 
 datashield.workspace_save(opals, "final_df_26_08_20_clean")
-opals <- datashield.login(all.logdata, restore = "final_df_26_08_20_clean")
-
-ds.ls()
-
