@@ -63,9 +63,9 @@ cohorts_tables <- bind_rows(
   tibble(
     opal_name = "raine",
     table = c(
-      "lc_raine_core_2_0.2_0_core_1_0_non_rep",
-      "lc_raine_core_2_0.2_0_core_1_0_monthly_rep",
-      "lc_raine_core_2_0.2_0_core_1_0_yearly_rep")),
+      "lc_raine_core_2_1.2_1_core_1_0_non_rep",
+      "lc_raine_core_2_1.2_1_core_1_0_monthly_rep",
+      "lc_raine_core_2_1.2_1_core_1_0_yearly_rep")),
   tibble(
     opal_name = "gecko",
     table = c(
@@ -102,8 +102,6 @@ cohorts_tables %>%
     value = table, 
     variables = eval(parse(text = paste0(type, ".vars"))))
 })
-
-ds.ls()
 
 ################################################################################
 # 2. Sort out cases where not all cohorts have these variables
