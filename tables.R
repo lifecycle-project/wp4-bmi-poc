@@ -288,13 +288,14 @@ forest_theme <-   theme(
   panel.spacing = unit(1, "lines"),
   plot.title = element_text(hjust = 0, vjust=0, size=11, face="bold"), #Plot title, thought don't tend to use
   text=element_text(size=10), #General text 
-  axis.title.y = element_text(family="Akzidenz Grotesk Reg", size=11, margin = margin(t = 0, r = 10, b = 0, l = 0)), #Axis labels
-  axis.title.x = element_text(family="Akzidenz Grotesk Reg", size=11, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-  axis.text.x = element_text(family="Akzidenz Grotesk Light", size=8, margin = margin(t = 4, r=0, b=0, l=0), colour="black"), #Axis text
-  axis.text.y = element_text(family="Akzidenz Grotesk Light", size=8, margin = margin(t = 0, r=4, b=0, l=0), colour="black"),
+  axis.title.y = element_text(family="ArialMT", size=11, margin = margin(t = 0, r = 10, b = 0, l = 0)), #Axis labels
+  axis.title.x = element_text(family="ArialMT", size=11, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+  axis.text.x = element_text(family="ArialMT", size=8, margin = margin(t = 4, r=0, b=0, l=0), colour="black"), #Axis text
+  axis.text.y = element_text(family="ArialMT", size=8, margin = margin(t = 0, r=4, b=0, l=0), colour="black"),
   axis.ticks.length=unit(0.3, "cm"),
   axis.ticks = element_line(colour = "grey"),
-  strip.text.x = element_text(family="Akzidenz Grotesk Reg", size=11),
+  strip.text.x = element_text(family="ArialMT", size=11),
+  strip.text.y = element_text(family="ArialMT", size=8, face = "bold"),
   strip.background = element_blank(),
   plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
   legend.position = "none") 
@@ -303,12 +304,13 @@ forest_theme <-   theme(
 ################################################################################
 # Education  
 ################################################################################
+palette_n <- c("#ff2600", rep("#005690", 8))
+
 cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
                  "Raine", "Combined")
 
-slma.pdata$cohort
-
-slma.pdata %<>%
+mat_ed.pdata <- slma.pdata %>%
+  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")) %>%
   mutate(
     cohort = case_when(
       cohort == "chop" ~ "CHOP",
@@ -319,46 +321,81 @@ slma.pdata %<>%
       cohort == "moba" ~ "MoBa", 
       cohort == "ninfea" ~ "NINFEA",
       cohort == "raine" ~ "Raine",
-      cohort == "combined" ~ "Combined"), 
-    cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
+      cohort == "combined" ~ "Combined"),
+    cohort = factor(
+      cohort, 
+      levels = rev(cohort_neat), 
+      ordered = TRUE), 
+    variable = case_when(
+      variable == "edu_m2" ~ "Medium maternal education (ref = high)", 
+      variable == "edu_m3" ~ "Low maternal education (ref = high)"),
+    variable = factor(
+      variable, 
+      levels = c("Medium maternal education (ref = high)", 
+                 "Low maternal education (ref = high)"),
+      ordered = TRUE), 
+    age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
+                                 "Age 97-168"))
+  )
 
-ggplot(data = slma.pdata %>% filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")),
-       aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
+mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = cohort), size = 0.3) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
-  ylab("Change in BMI per unit change of exposure (95% Confidence Interval)") +
-  facet_grid(age ~ variable, scales = "fixed") + 
+  ylab("Difference in childhood BMI by category of maternal education (95% Confidence Interval)") +
+  facet_grid(age ~ variable, scales = "fixed", switch = "y") + 
   forest_theme +
-  coord_flip() 
+  coord_flip() +
+  scale_colour_manual(values = palette_n) +
+  theme(
+    axis.text.y = element_text(
+      family="ArialMT", 
+      size=6, 
+      margin = margin(t = 0, r=4, b=0, l=0), 
+      colour="black")
+  )
 
+ggsave(filename="mat_ed.png", plot =  mat_ed.plot, dpi=300, device="png")
 
 ## ---- ndvi -------------------------------------------------------------------
-ggplot(data = slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi300_0_1"),
+ndvi.pdata <- slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi300_0_1") %>%
+  mutate(age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
+                                 "Age 97-168")))
+
+ndvi.plot <- ggplot(data = ndvi.pdata,
        aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = cohort), size = 0.2) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
-  ylab("Change in BMI per unit change of exposure (95% Confidence Interval)") +
+  ylab("Difference in childhood BMI by unit change in NDVI (95% Confidence Interval)") +
   facet_wrap(~age, strip.position = "left", nrow = 4) + 
   geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
   forest_theme +
   coord_flip() +
-  ylim(-6, 4)
+  ylim(-6, 4) +
+  scale_colour_manual(values = palette_n)
+
+ggsave(filename="ndvi.png", plot = ndvi.plot, dpi=300, device="png")
 
 ## ---- Pregnancy diabetes -----------------------------------------------------
-ggplot(data = slma.pdata %>% filter(variable == "preg_dia1" & exposure == "preg_dia"),
+preg_dia.pdata <- slma.pdata %>% filter(variable == "preg_dia1" & exposure == "preg_dia") %>%
+  mutate(age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
+                                      "Age 97-168")))
+
+preg_dia.plot <- ggplot(data = preg_dia.pdata,
        aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = cohort), size = 0.2) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
-  ylab("Change in BMI per unit change of exposure (95% Confidence Interval)") +
+  ylab("Difference in chilhood BMI where gestational diabetes present (95% Confidence Interval)") +
   facet_wrap(~age, strip.position = "left", nrow = 4) + 
   geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
   forest_theme +
   coord_flip() +
-  ylim(-1, 2)
+  ylim(-1, 2) +
+  scale_colour_manual(values = palette_n)
 
+ggsave(filename="preg_dia.png", plot = preg_dia.plot, dpi=300, device="png")
 
 ################################################################################
 # October 2020 GA sample size visualisation  
@@ -387,7 +424,7 @@ testy <- test %>%
       cohort == "Combined" ~ "Combined"), 
     cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
 
-ggplot(data = testy, aes(x = perc_50, y = cohort, size = valid_n, colour = cohort)) +
+sample.plot <- ggplot(data = testy, aes(x = perc_50, y = cohort, size = valid_n, colour = cohort)) +
 geom_point() + 
   geom_vline(xintercept = 0, linetype=2, size = 0.3) +
   geom_vline(xintercept = 24, linetype=2, size = 0.3) +
@@ -402,7 +439,19 @@ geom_point() +
         panel.grid.minor.x =element_line(colour="white"),
         axis.ticks.x = element_line(colour = "grey"), 
         legend.position = "top") +
-  scale_x_continuous(limits = c(0, 215), breaks = c(0, 24, 48, 96, 168, 215), expand = c(0.01, 0))
+  scale_x_continuous(
+    limits = c(0, 215), 
+    breaks = c(0, 24, 48, 96, 168, 215), 
+    expand = c(0.01, 0)) +
+  scale_colour_manual(values = palette_n)
+
+ggsave(
+  filename="sample_size.png", 
+  plot =  sample.plot, 
+  dpi=300, 
+  device="png")
+
+
 
 
 
