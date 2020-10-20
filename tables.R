@@ -204,16 +204,8 @@ write.csv(ipd_ns.tab)
 
 
 ################################################################################
-# Forest plot SLMA  
+# Forest plot function
 ################################################################################
-mat_ed.fit[[2]]$bmi_24$betamatrix.valid
-mat_ed.fit[[2]]$bmi_24$$sematrix.valid
-
-
-obj <- mat_ed.fit[[2]]$bmi_24
-mod <- mat_ed.mod$bmi_24
-
-obj$SLMA.pooled.ests.matrix
 
 dh.forestData <- function(obj, mod){
   
@@ -285,6 +277,9 @@ table(slma.pdata$cohort)
 library(ggplot2)
 
 
+################################################################################
+# Theme  
+################################################################################
 forest_theme <-   theme(
   plot.background = element_rect(fill =scales::alpha("#CCCCCC", 0.3)),  #Background outside of plot
   panel.background = element_rect(fill="white"),  #Background for plot
@@ -304,31 +299,39 @@ forest_theme <-   theme(
   plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
   legend.position = "none") 
 
-## ---- Education level 2  vs 1-------------------------------------------------
-ggplot(data = slma.pdata %>% filter(exposure == "mat_ed" & variable == "edu_m2"),
-       aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = cohort), size = 0.2) +
-  geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
-  xlab('Cohort')+ 
-  ylab("Change in BMI per unit change of exposure (95% Confidence Interval)") +
-  facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
-  forest_theme +
-  coord_flip() +
-  ylim(-1, 3)
 
-## ---- Education level 3 vs 1 -------------------------------------------------
-ggplot(data = slma.pdata %>% filter(exposure == "mat_ed" & variable == "edu_m3"),
+################################################################################
+# Education  
+################################################################################
+cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
+                 "Raine", "Combined")
+
+slma.pdata$cohort
+
+slma.pdata %<>%
+  mutate(
+    cohort = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "combined" ~ "Combined"), 
+    cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
+
+ggplot(data = slma.pdata %>% filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")),
        aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = cohort), size = 0.2) +
+  geom_pointrange(aes(colour = cohort), size = 0.3) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
   ylab("Change in BMI per unit change of exposure (95% Confidence Interval)") +
-  facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
+  facet_grid(age ~ variable, scales = "fixed") + 
   forest_theme +
-  coord_flip() +
-  ylim(-1, 3)
+  coord_flip() 
+
 
 ## ---- ndvi -------------------------------------------------------------------
 ggplot(data = slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi300_0_1"),
@@ -357,4 +360,59 @@ ggplot(data = slma.pdata %>% filter(variable == "preg_dia1" & exposure == "preg_
   ylim(-1, 2)
 
 
+################################################################################
+# October 2020 GA sample size visualisation  
+################################################################################
+cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
+                 "Raine", "Combined")
 
+test <- descriptives_ss$continuous %>%
+  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
+                         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
+                         "age_months.168", "age_months.215")) 
+  
+testy <- test %>% 
+  separate(variable, c("var", "age"), sep = "([.])") %>% print(n = 90) %>%
+  filter(var == "age_months") %>%
+  mutate(
+    cohort = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "Combined" ~ "Combined"), 
+    cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
+
+ggplot(data = testy, aes(x = perc_50, y = cohort, size = valid_n, colour = cohort)) +
+geom_point() + 
+  geom_vline(xintercept = 0, linetype=2, size = 0.3) +
+  geom_vline(xintercept = 24, linetype=2, size = 0.3) +
+  geom_vline(xintercept = 48, linetype=2, size = 0.3) + 
+  geom_vline(xintercept = 96, linetype=2, size = 0.3) + 
+  geom_vline(xintercept = 168, linetype=2, size = 0.3) +
+  geom_vline(xintercept = 215, linetype=2, size = 0.3) +
+  xlab("Child age (months)") +
+  ylab("Cohort") +
+  forest_theme + 
+  theme(panel.grid.major.x = element_line(colour="white"),
+        panel.grid.minor.x =element_line(colour="white"),
+        axis.ticks.x = element_line(colour = "grey"), 
+        legend.position = "top") +
+  scale_x_continuous(limits = c(0, 215), breaks = c(0, 24, 48, 96, 168, 215), expand = c(0.01, 0))
+
+
+
+x_axis <- scale_x_continuous(expand = c(0, 0)) # Removes space before 0
+y_axis <- scale_y_continuous(expand = c(0, 0))
+
+geom_errorbarh(
+  aes(xmin = perc_5, xmax = perc_95, colour = cohort), 
+  size=0.2, cex=1, height = 0.3) +
+
+geom_rect(xmin = 0, xmax = 24, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +
+  geom_rect(xmin = 48, xmax = 96, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +
+  geom_rect(xmin = 168, xmax = 215, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +
