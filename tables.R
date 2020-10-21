@@ -309,8 +309,7 @@ palette_n <- c("#ff2600", rep("#005690", 8))
 cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
                  "Raine", "Combined")
 
-mat_ed.pdata <- slma.pdata %>%
-  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")) %>%
+slma.pdata %<>%
   mutate(
     cohort = case_when(
       cohort == "chop" ~ "CHOP",
@@ -326,6 +325,13 @@ mat_ed.pdata <- slma.pdata %>%
       cohort, 
       levels = rev(cohort_neat), 
       ordered = TRUE), 
+    age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
+                                 "Age 97-168"))
+  )
+    
+mat_ed.pdata <- slma.pdata %>% 
+  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")) %>%
+  mutate(  
     variable = case_when(
       variable == "edu_m2" ~ "Medium maternal education (ref = high)", 
       variable == "edu_m3" ~ "Low maternal education (ref = high)"),
@@ -333,9 +339,7 @@ mat_ed.pdata <- slma.pdata %>%
       variable, 
       levels = c("Medium maternal education (ref = high)", 
                  "Low maternal education (ref = high)"),
-      ordered = TRUE), 
-    age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
-                                 "Age 97-168"))
+      ordered = TRUE)
   )
 
 mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
@@ -355,33 +359,38 @@ mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = cohort,y = beta, ymin = ci_5,
       colour="black")
   )
 
-ggsave(filename="mat_ed.png", plot =  mat_ed.plot, dpi=300, device="png")
+ggsave(
+  filename="./figures/mat_ed.png", 
+  plot = mat_ed.plot,
+  dpi=300, 
+  device="png")
 
 ## ---- ndvi -------------------------------------------------------------------
-ndvi.pdata <- slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi300_0_1") %>%
-  mutate(age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
-                                 "Age 97-168")))
+ndvi.pdata <- slma.pdata %>% 
+  filter(exposure == "ndvi" & variable == "ndvi300_0_1") 
 
 ndvi.plot <- ggplot(data = ndvi.pdata,
        aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = cohort), size = 0.2) +
+  geom_pointrange(aes(colour = cohort), size = 0.3) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
   ylab("Difference in childhood BMI by unit change in NDVI (95% Confidence Interval)") +
   facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
   forest_theme +
   coord_flip() +
   ylim(-6, 4) +
   scale_colour_manual(values = palette_n)
 
-ggsave(filename="ndvi.png", plot = ndvi.plot, dpi=300, device="png")
+ggsave(
+  filename="./figures/ndvi.png", 
+  plot = ndvi.plot, 
+  dpi=300, 
+  device="png")
 
 ## ---- Pregnancy diabetes -----------------------------------------------------
-preg_dia.pdata <- slma.pdata %>% filter(variable == "preg_dia1" & exposure == "preg_dia") %>%
-  mutate(age = factor(age, labels = c("Age 0-24", "Age 25-48", "Age 49-96", 
-                                      "Age 97-168")))
-
+preg_dia.pdata <- slma.pdata %>% 
+  filter(variable == "preg_dia1" & exposure == "preg_dia")
+  
 preg_dia.plot <- ggplot(data = preg_dia.pdata,
        aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = cohort), size = 0.2) +
@@ -389,13 +398,16 @@ preg_dia.plot <- ggplot(data = preg_dia.pdata,
   xlab('Cohort')+ 
   ylab("Difference in chilhood BMI where gestational diabetes present (95% Confidence Interval)") +
   facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  geom_errorbar(aes(ymin=ci_5, ymax=ci_95,colour=cohort),width=0.2,cex=1) + 
   forest_theme +
   coord_flip() +
   ylim(-1, 2) +
   scale_colour_manual(values = palette_n)
 
-ggsave(filename="preg_dia.png", plot = preg_dia.plot, dpi=300, device="png")
+ggsave(
+  filename="./figures/preg_dia.png", 
+  plot = preg_dia.plot, 
+  dpi=300, 
+  device="png")
 
 ################################################################################
 # October 2020 GA sample size visualisation  
@@ -446,8 +458,8 @@ geom_point() +
   scale_colour_manual(values = palette_n)
 
 ggsave(
-  filename="sample_size.png", 
-  plot =  sample.plot, 
+  filename="./figures/sample_size.png", 
+  plot = sample.plot, 
   dpi=300, 
   device="png")
 
