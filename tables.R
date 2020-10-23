@@ -343,7 +343,7 @@ mat_ed.pdata <- slma.pdata %>%
   )
 
 mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = cohort), size = 0.3) +
+  geom_pointrange(aes(colour = cohort), size = 0.15) +
   geom_hline(aes(fill=cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
   ylab("Difference in childhood BMI by category of maternal education (95% Confidence Interval)") +
