@@ -16,7 +16,7 @@ require(dsHelper)
 library(purrr)
 
 
-opals <- datashield.login(logindata, restore = "bmi_poc_sec_10")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
 # Issues to report
 # 
@@ -28,85 +28,13 @@ opals <- datashield.login(logindata, restore = "bmi_poc_sec_10")
 ################################################################################
 # 1. Descriptives  
 ################################################################################
-
-## ---- Extract data -----------------------------------------------------------
-
-# Now we extract descriptives using the function "getStats" which I wrote.
-descriptives_ss <- dh.getStats(
+descriptives <- dh.getStats(
    df = "analysis_df",
-   vars = c(exp.vars, out.vars, cov.vars, other.vars)
+   vars = c(exp.vars, out.vars, cov.vars, other.vars), 
+   conns = conns
 )
 
 save.image()
-
-
-################################################################################
-# 2. Create combined green exposures
-################################################################################
-
-## A small number of cohorts have this data. Moba has it in first year of life,
-## NINFEA and INMA have it in pregnancy. I'll create a combined variable for 
-## now.
-
-green_preg <- c("greenyn300_preg_rev", "green_dist_preg", "green_size_preg", 
-                "ndvi300_preg", "areases_tert_preg_rev", 
-                "areases_quint_preg_rev")
-
-green_1 <-c("greenyn300_1", "green_dist_1", "green_size_1", "ndvi300_1", 
-            "areases_tert_1", "areases_quint_1")
-
-green_comb <-  c("greenyn300_0_1", "green_dist_0_1", "green_size_0_1", 
-                 "ndvi300_0_1", "areases_tert_0_1", "areases_quint_0_1")
-
-green_convert <- tibble(
-  formula = c(
-    rep(paste0("analysis_df$", green_preg), 2), 
-    paste0("analysis_df$", green_1)), 
-  obj = rep(
-   green_comb, 3),
-  cohort = c(
-    rep("ninfea", 6),
-    rep("inma", 6), 
-    rep("moba", 6))
-  )
-
-green_convert %>%
-  pmap(function(formula, obj, cohort){
-    
-    ds.assign(
-      toAssign = formula, 
-      newobj = obj, 
-      datasources = opals[cohort])    
-    
-  })
-
-ds.dataFrame(
-  x = c("analysis_df", green_comb), 
-  newobj = "analysis_df", 
-  datasources = opals[c("ninfea", "inma", "moba")])
-
-ds.dataFrameFill("analysis_df", "analysis_df")
- 
-ds.asFactor("analysis_df$greenyn300_0_1", "greenyn300_0_1_f")
-ds.asFactor("analysis_df$areases_tert_0_1", "areases_tert_0_1_f")
-ds.asFactor("analysis_df$areases_quint_0_1", "areases_quint_0_1_f")
-
-ds.dataFrame(
-  x = c("analysis_df", "greenyn300_0_1_f", "areases_tert_0_1_f", 
-        "areases_quint_0_1_f"), 
-  newobj = "analysis_df")
-
-green_comb_rev <- c("green_dist_0_1", "green_size_0_1", "ndvi300_0_1", 
-                    "greenyn300_0_1_f", "areases_tert_0_1_f", 
-                    "areases_quint_0_1_f")
-   
-green.tab <- dh.getStats(
-  df = "analysis_df", 
-  vars = green_comb_rev
-)
-
-datashield.workspace_save(opals, "bmi_poc_green")
-opals <- datashield.login(logindata, restore = "bmi_poc_green")
 
 ################################################################################
 # Model definitions  
@@ -118,59 +46,102 @@ opals <- datashield.login(logindata, restore = "bmi_poc_green")
 ## can enter information once and use the function to make the model components
 ## as required by the IPD vs SLMA functions.
 
+descriptives[[2]] %>% filter(str_detect(variable, "bmi.730"))
+descriptives[[2]] %>% filter(str_detect(variable, "bmi.1461"))
+descriptives[[2]] %>% filter(str_detect(variable, "bmi.2922"))
+descriptives[[2]] %>% filter(str_detect(variable, "bmi.5113"))
+descriptives[[2]] %>% filter(str_detect(variable, "bmi.6544"))
+
+descriptives[[1]] %>% filter(str_detect(variable, "preg_dia"))
+
 ## ---- Maternal education -----------------------------------------------------
+cohorts <- names(conns)
+
 mat_ed.mod <- list(
   bmi_24 = list(
     outcome = "bmi.730",
     exposure = "edu_m",
     covariates = c("age_days.730", "sex"),
-    cohorts = cohorts), 
+    cohorts = cohorts[cohorts %in% c("sws", "nfbc86") == FALSE]), 
   bmi_48 = list(
     outcome = "bmi.1461",
     exposure = "edu_m",
     covariates = c("age_days.1461", "sex"),
-    cohorts = cohorts[cohorts %in% "dnbc" == FALSE]),
+    cohorts = cohorts[cohorts %in% c("dnbc", "sws", "nfbc86") == FALSE]),
   bmi_96 = list(
     outcome = "bmi.2922",
     exposure = "edu_m", 
     covariates = c("age_days.2922", "sex"),
-    cohorts = cohorts),
+    cohorts = cohorts[cohorts %in% c("dnbc", "sws", "elfe", "nfbc86") == FALSE]),
   bmi_168 = list(
     outcome = "bmi.5113",
     exposure = "edu_m", 
     covariates = c("age_days.5113", "sex"),
-    cohorts = cohorts)
+    cohorts = cohorts[cohorts %in% c("dnbc", "sws", "elfe", "nfbc86") == FALSE])
+)
+
+
+## ---- Area deprivation -------------------------------------------------------
+descriptives[[1]] %>% 
+  filter(variable == "area_dep" & valid_n > 0) %>%
+  print(n = Inf)
+
+env_coh <- c("moba", "ninfea", "inma")
+
+area_dep.mod <- list(
+  bmi_24 = list(
+    outcome = "bmi.730",
+    exposure = "area_dep",
+    covariates = c("age_days.730", "sex"),
+    cohorts = env_coh), 
+  bmi_48 = list(
+    outcome = "bmi.1461",
+    exposure = "area_dep",
+    covariates = c("age_days.1461", "sex"),
+    cohorts = env_coh),
+  bmi_96 = list(
+    outcome = "bmi.2922",
+    exposure = "area_dep", 
+    covariates = c("age_days.2922", "sex"),
+    cohorts = env_coh),
+  bmi_168 = list(
+    outcome = "bmi.5113",
+    exposure = "area_dep", 
+    covariates = c("age_days.5113", "sex"),
+    cohorts = env_coh)
 )
 
 
 ## ---- NDVI -------------------------------------------------------------------
-green_covs <- c("sex", "edu_m", "parity_bin", "areases_tert_0_1_f")
+green_covs <- c("sex", "edu_m", "parity_bin", "area_dep")
 
 ndvi.mod <- list(
   bmi_24 = list(
     outcome = "bmi.730",
     exposure = "ndvi300_0_1",
     covariates = c("age_days.730", green_covs),
-    cohorts = c("moba", "ninfea", "inma")), 
+    cohorts = env_coh), 
   bmi_48 = list(
     outcome = "bmi.1461",
     exposure = "ndvi300_0_1",
     covariates = c("age_days.1461", green_covs),
-    cohorts = c("moba", "ninfea", "inma")),
+    cohorts = env_coh),
   bmi_96 = list(
     outcome = "bmi.2922",
     exposure = "ndvi300_0_1", 
     covariates = c("age_days.2922", green_covs),
-    cohorts = c("moba", "ninfea", "inma")), 
+    cohorts = env_coh), 
   bmi_168 = list(
     outcome = "bmi.5113",
     exposure = "ndvi300_0_1", 
     covariates = c("age_days.5113", green_covs),
-    cohorts = c("moba", "ninfea", "inma")) 
+    cohorts = env_coh) 
 )
 
 
 ## ---- Gestational diabetes ---------------------------------------------------
+descriptives[[1]] %>% filter(variable == "preg_dia" & valid_n == 0)
+
 preg_dia_cov <- c("sex", "edu_m", "parity_bin", "agebirth_m_y", "prepreg_bmi")
 
 preg_dia.mod <- list(
@@ -178,35 +149,37 @@ preg_dia.mod <- list(
     outcome = "bmi.730",
     exposure = "preg_dia",
     covariates = c("age_days.730", preg_dia_cov),
-    cohorts = cohorts[cohorts %in% c("chop", "raine") == FALSE]), 
+    cohorts = cohorts[cohorts %in% c("chop", "nfbc86", "sws", "nfbc86") == FALSE]), 
   bmi_48 = list(
     outcome = "bmi.1461",
     exposure = "preg_dia",
     covariates = c("age_days.1461", preg_dia_cov),
-    cohorts = cohorts[cohorts %in% c("chop", "raine", "dnbc") == FALSE]),
+    cohorts = cohorts[cohorts %in% c("chop", "nfbc86", "dnbc", "sws", "nfbc86") == FALSE]),
   bmi_96 = list(
     outcome = "bmi.2922",
     exposure = "preg_dia", 
     covariates = c("age_days.2922", preg_dia_cov),
-    cohorts = cohorts[cohorts %in% c("chop", "raine") == FALSE]),
+    cohorts = cohorts[cohorts %in% c("chop", "nfbc86", "elfe", "sws", "nfbc86") == FALSE]),
   bmi_168 = list(
     outcome = "bmi.5113",
     exposure = "preg_dia", 
     covariates = c("age_days.5113", preg_dia_cov),
-    cohorts = cohorts[cohorts %in% c("chop", "raine") == FALSE])
+    cohorts = cohorts[cohorts %in% c("chop", "nfbc86", "elfe", "sws", "nfbc86") == FALSE])
   )
+  
 
 
 ################################################################################
 # Function
 ################################################################################
-dh.regWrap <- function(x, type, nodummy = "genr", dummy_suff = "_dummy", data = "analysis_df"){
+
+dh.regWrap <- function(x, type, dummy_suff = "_dummy", data = "analysis_df"){
   
   if(type == "ipd"){
     
     mod <- list(
       model = paste0(x$outcome, "~", x$exposure, "+", paste0(x$covariates, collapse = "+"), 
-                     "+", paste0(x$cohorts[x$cohorts %in% nodummy == FALSE], "_dummy", collapse = "+")),
+                     "+", paste0(x$cohorts[-1], "_dummy", collapse = "+")),
       cohorts = x$"cohorts"
     )
     
@@ -214,7 +187,7 @@ dh.regWrap <- function(x, type, nodummy = "genr", dummy_suff = "_dummy", data = 
       formula = mod$model,
       data = "analysis_df", 
       family = "gaussian", 
-      datasources = opals[mod$cohorts])
+      datasources = conns[mod$cohorts])
     
 }
   
@@ -228,9 +201,9 @@ dh.regWrap <- function(x, type, nodummy = "genr", dummy_suff = "_dummy", data = 
     
     out <- ds.glmSLMA(
       formula = mod$model,
-      data = "analysis_df", 
+      dataName = "analysis_df", 
       family = "gaussian",
-      datasources = opals[mod$cohorts])
+      datasources = conns[mod$cohorts])
   }
   
   return(out)
@@ -249,8 +222,8 @@ mat_ed.fit <- list(
 
 ## ---- NDVI -------------------------------------------------------------------
 ndvi.fit <- list(
-  ipd = ndvi.mod %>% map(dh.regWrap, type = "ipd", nodummy = "ninfea"),
-  slma = ndvi.mod %>% map(dh.regWrap, type = "slma", nodummy = "ninfea")
+  ipd = ndvi.mod %>% map(dh.regWrap, type = "ipd"),
+  slma = ndvi.mod %>% map(dh.regWrap, type = "slma")
 )
 
 ## ---- Gestational diabetes ---------------------------------------------------
@@ -264,6 +237,9 @@ save.image()
 
 ################################################################################
 # Repeat analyses stratified by sex  
+################################################################################
+################################################################################
+# Prepare data  
 ################################################################################
 
 ## ---- Create sex-stratified subsets ------------------------------------------
@@ -283,14 +259,38 @@ ds.dataFrameSubset(
   keep.NAs = FALSE, 
   newobj = "analysis_df_f")
 
-## Hack of other function: can generalise
 
-dh.amendSex <- function(model, var){
-  model %>% map(function(x){list_modify(x, covariates = x$covariates[!x$covariates %in% var])})
+datashield.workspace_save(conns, "bmi_poc_sec_12")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
+
+## ---- Function to remove sex terms from previous model definitions -----------
+dh.removeTerm <- function(model, var, category){
+  model %>% map(function(x){list_modify(x, !!category := x[[category]][!x[[category]] %in% var])})
 }
 
-mat_ed_sex.mod <- dh.amendSex(mat_ed.mod, "sex")
 
+## ---- Create amended models --------------------------------------------------
+mat_ed_sex.mod <- dh.removeTerm(
+  model = mat_ed.mod, 
+  var = "sex", 
+  category = "covariates")
+
+ndvi_sex.mod <- dh.removeTerm(
+  model = ndvi.mod, 
+  var = "sex", 
+  category = "covariates")
+
+preg_dia_sex.mod <- dh.removeTerm(
+  model = preg_dia.mod, 
+  var = "sex", 
+  category = "covariates")
+
+
+################################################################################
+# Run sex-stratified models  
+################################################################################
+
+## ---- Maternal education -----------------------------------------------------
 mat_ed_m.fit <- list(
   ipd = mat_ed_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
   slma = mat_ed_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
@@ -302,43 +302,104 @@ mat_ed_f.fit <- list(
 )
 
 
+## ---- NDVI -------------------------------------------------------------------
+ndvi_m.fit <- list(
+  ipd = ndvi_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
+  slma = ndvi_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
+)
+
+ndvi_f.fit <- list(
+  ipd = ndvi_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
+  slma = ndvi_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
+)
+
+
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+preg_dia_m.fit <- list(
+  ipd = preg_dia_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
+  slma = preg_dia_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
+)
+
+preg_dia <- list(
+  ipd = preg_dia_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
+  slma = preg_dia_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
+)
 
 
 ################################################################################
 # Repeat analyses removing DNBC and MoBa  
 ################################################################################
 
-## ---- Function to do one-removed ---------------------------------------------
 
-## Function to modify the included cohorts in the model specification
+## ---- Amend model definitions ------------------------------------------------
+mat_ed_remove.mod <- dh.removeTerm(
+  model = mat_ed.mod, 
+  var = c("dnbc", "moba"), 
+  category = "cohorts")
+
+ndvi_remove.mod <- dh.removeTerm(
+  model = ndvi.mod, 
+  var = c("dnbc", "moba"), 
+  category = "cohorts")
+
+preg_dia_remove.mod <- dh.removeTerm(
+  model = preg_dia.mod, 
+  var = c("dnbc", "moba"), 
+  category = "cohorts")
 
 
-dh.removeCohort <- function(model){
 
-dh.amendModel <- function(model, cohort){
-model %>% map(function(x){list_modify(x, cohorts = x$cohorts[!x$cohorts %in% cohort])})
-}
+## ---- Create amended models --------------------------------------------------
 
-remove.mod <- list(
-  dnbc = dh.amendModel(model, cohort = "dnbc"), 
-  moba = dh.amendModel(model, cohort = "moba"),
-  both = dh.amendModel(model, cohort = c("dnbc", "moba"))
+## Maternal education
+mat_ed_remove.fit <- list(
+  ipd = mat_ed_remove.mod %>% map(dh.regWrap, type = "ipd"), 
+  slma = mat_ed_remove.mod %>% map(dh.regWrap, type = "slma")
 )
- 
-out <- list(
-  dnbc = list(
-    ipd = remove.mod$dnbc %>% map(dh.regWrap, type = "ipd"),
-    slma = remove.mod$dnbc %>% map(dh.regWrap, type = "slma")), 
-  moba = list(
-    ipd = remove.mod$moba %>% map(dh.regWrap, type = "ipd"),
-    slma = remove.mod$moba %>% map(dh.regWrap, type = "slma")), 
-  both = list(
-    ipd = remove.mod$both %>% map(dh.regWrap, type = "ipd"),
-    slma = remove.mod$both %>% map(dh.regWrap, type = "slma"))
-  )
 
-return(out)
-}
+## NDVI
+ndvi_remove.fit <- list(
+  ipd = ndvi_remove.mod %>% map(dh.regWrap, type = "ipd"), 
+  slma = ndvi_remove.mod %>% map(dh.regWrap, type = "slma")
+)
+
+## Pregnancy diabetes
+preg_dia_remove.fit <- list(
+  ipd = preg_dia_remove.mod %>% map(dh.regWrap, type = "ipd"), 
+  slma = preg_dia_remove.mod %>% map(dh.regWrap, type = "slma")
+)
+
+
+save.image()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dh.removeTerm(
+  model = mat_ed.mod, 
+  var = "ninfea", 
+  category = "cohorts")
+
+
+x = model
+
 
 mat_ed_remove.fit <- dh.removeCohort(mat_ed.mod)
 
@@ -372,134 +433,3 @@ mat_ed_removed.tab <- bind_rows(remove_n, remove_d, remove_m, remove_b)
 
 colnames(mat_ed_removed.tab) <- c(
   "variable", "age_0_24", "age_25_48", "age_49_96", "age_96_168", "removed")
-
-
-
-
-
-
-
-)
-  
-  
-)
-
- 
-mat_ed_moba.mod <- dh.removeCohort(mat_ed.mod, cohort = "dnbc")
-
-
-mat_ed.mod$bmi_24 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-mat_ed.mod$bmi_48 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-mat_ed.mod$bmi_96 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-mat_ed.mod$bmi_168 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-
-
-
-
-
-
-mat_ed_moba.mod <- mat_ed.mod %>%
-  map(f)
-
-
-
-str(mat_ed.mod)
-
-
-mat_ed.mod %>%
-map(list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"]))
-
-
-mat_ed.mod %>%
-map(function(x){
-  
-  
-  mat_ed.mod %>%
-    
-  
-    mat_ed.mod %>% list_modify(.x = bmi_24, cohorts = bmi_24["cohorts"][!bmi_24["cohorts"] == "dnbc"])
-  
-  mat_ed.mod %>% bmi_24
-  
-    
-    
-  str(mat_ed.mod)
-  
-  mat_ed.mod %>% list_modify(.$bmi_24, cohorts = .bmi_24$cohorts[!.bmi_24$cohorts == "dnbc"])
-  
-  mat_ed.mod$bmi_24 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-  mat_ed.mod$bmi_48 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-  mat_ed.mod$bmi_96 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-  mat_ed.mod$bmi_168 %>% list_modify(., cohorts = .$cohorts[!.$cohorts == "dnbc"])
-  
-  
-
-list_modify(mat_ed.mod$bmi_24, cohorts = mat_ed.mod$bmi_24$cohorts[!mat_ed.mod$bmi_24$cohorts == "dnbc"])
-list_modify(mat_ed.mod$bmi_48, cohorts = mat_ed.mod$bmi_48$cohorts[!mat_ed.mod$bmi_24$cohorts == "dnbc"])
-list_modify(mat_ed.mod$bmi_96, cohorts = mat_ed.mod$bmi_96$cohorts[!mat_ed.mod$bmi_24$cohorts == "dnbc"])
-list_modify(mat_ed.mod$bmi_168, cohorts = mat_ed.mod$bmi_168$cohorts[!mat_ed.mod$bmi_24$cohorts == "dnbc"])
-
-
-
-library(stringr)
-
-
-
-str(mat_ed.mod$bmi_24$cohorts)
-
-mat_ed.mod$bmi_24$cohorts[!str_detect(mat_ed.mod$bmi_24$cohorts, "dnbc")]
-
-rev <- mat_ed.mod %>% map(function(x){x$cohorts[!x$cohorts %in% "moba"]})
-
-test <- names(rev) %>%  map(function(x){
-  
-  tmp <- mat_ed.mod[[x]]
-  tmp$cohorts <- rev[x]})
-      
-x <- "bmi_24"
-      
-mat_ed.mod$bmi_48$cohorts <- rev$bmi_48
-mat_ed.mod$bmi_96$cohorts <- rev$bmi_96
-mat_ed.mod$bmi_168$cohorts <- rev$bmi_168
-
-
-list(rev, mat_ed.mod) %>%
-  pmap(function(rev, mat_ed.mod){
-    
-    x$cohorts <- 
-    
-  })
-  
-
-
-cohorts[!str_detect(cohorts, "dnbc")]
-
-["dnbc" %in% mat_ed.mod$bmi_24$cohorts]
-
-mat_ed.mod %>% map(function(x){
-  
-  mutate(x, cohorts = cohorts["dnbc" %in% cohorts])
-  
-})
-
-mat_ed.mod$bmi_24 %>% filter(cohorts != "moba")
-
-mat_ed.mod %>% map(filter(.$cohorts != "moba"))
-    
-    
-  })
-
-[!str_detect(mat_ed.mod, pattern="moba")]
-
-length(mat_ed.mod$bmi_24$cohorts)
-
-mat_ed.mod$bmi_24$cohorts %>%
-  map(function(x){
-    
-    
-    
-    
-  }
-
-
-
