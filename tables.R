@@ -399,7 +399,7 @@ area_dep.plot <- ggplot(data = area_dep.pdata,
 ggsave(
   filename="./figures/area_dep.png", 
   plot = area_dep.plot, 
-  h = 7, w = 15.92, units="cm", dpi=1200,
+  h = 12, w = 15.92, units="cm", dpi=1200,
   device="png")
 
 
