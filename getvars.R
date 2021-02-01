@@ -14,8 +14,8 @@ library(dplyr)
 library(magrittr)
 library(tidyr)
 library(stringr)
-#library(remotes)
-#install_github("lifecycle-project/ds-helper", ref = "maintenance")
+library(remotes)
+install_github("lifecycle-project/ds-helper", ref = "maintenance")
 library(dsHelper)
 
 #datashield.workspaces(opals)
@@ -479,7 +479,6 @@ coh_dummy %>%
 datashield.workspace_save(conns, "bmi_poc_sec_8")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_8")
 
-
 ################################################################################
 # 9. Merge various datasets  
 ################################################################################
@@ -601,7 +600,6 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_9")
 # MoBa has environmental exposures at year 0-1, whilst INMA and NINFEA have
 # these recorded in pregnancy. Let's create combined exposures.
 
-ds.colnames("bmi_poc")
 env_coh <- c("inma", "ninfea", "moba")
 
 
@@ -622,20 +620,20 @@ ds.assign(
 ## ---- Area deprivation -------------------------------------------------------
 ds.assign(
   toAssign = "bmi_poc$areases_tert_preg", 
-  newobj = "area_dep",
+  newobj = "area_dep_tmp",
   datasources = conns[c("inma", "ninfea")]
 ) 
 
 ds.assign(
   toAssign = "bmi_poc$areases_tert_1", 
-  newobj = "area_dep",
+  newobj = "area_dep_tmp",
   datasources = conns["moba"]
 )
 
 
 ## ---- Join back in -----------------------------------------------------------
 ds.dataFrame(
-  x = c('bmi_poc', "ndvi", "area_dep"), 
+  x = c('bmi_poc', "ndvi", "area_dep_tmp"), 
   newobj = 'bmi_poc', 
   datasources = conns[c("moba", "inma", "ninfea")]
 )
@@ -643,52 +641,25 @@ ds.dataFrame(
 
 ## ---- Fill missing variables -------------------------------------------------
 ds.dataFrameFill("bmi_poc", "bmi_poc")
+ds.colnames("bmi_poc")
+
+
+
+## ---- Fix factor variables ---------------------------------------------------
+ds.asFactor(
+  input.var.name = "bmi_poc$area_dep_tmp",
+  newobj.name = "area_dep")
+
+ds.levels("area_dep")
+
+ds.dataFrame(
+  x = c('bmi_poc', "area_dep"), 
+  newobj = 'bmi_poc')
+
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_10")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_10")
-
-
-################################################################################
-# 11. Cap NDVI at minimum value of 0  
-################################################################################
-ds.Boole(
-  V1 = "bmi_poc$ndvi", 
-  V2 = 0,
-  Boolean.operator = ">=",
-  numeric.output = TRUE, 
-  na.assign = "NA", 
-  newobj = "ndvi_cap", 
-  datasources = conns[env_coh])
-
-ndvi_var <- dh.findVarsIndex(
-  df = "bmi_poc", 
-  vars = "ndvi", 
-  conns = conns[env_coh]
-)
-
-ndvi_var %>%
-  imap(
-    ~ds.dataFrameSubset(
-      df.name = "bmi_poc", 
-      V1.name = "bmi_poc$ndvi",
-      V2.name = "0",
-      Boolean.operator = ">=",
-      keep.cols = .x,
-      keep.NAs = TRUE,
-      newobj = "ndvi_cap",
-      datasources = conns[.y])
-    )
-
-ds.summary("ndvi", datasources = conns[env_coh])
-ds.summary("ndvi_cap", datasources = conns[env_coh])
-
-## Hmm, this looks like there aren't any negative values. I will just stick to
-## using ndvi for now.
-
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_11")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
 
 ################################################################################
 # 10. Create analysis dataset  
@@ -701,16 +672,13 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
 
 ## ---- First we specify vectors of exposures and outcomes ---------------------
 exp.vars <- c(
-  "edu_m", "ga_all", "preg_dia", "greenyn300_preg", "green_dist_preg", 
-  "green_size_preg", "ndvi300_preg", "greenyn300_1", "green_dist_1", 
-  "green_size_1", "ndvi300_1", "ndvi", "area_dep")
+  "edu_m", "ga_all", "preg_dia", "ndvi", "area_dep")
            
 out.vars <- c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", "bmi.6544")
   
 cov.vars <- c(
   "sex", "preg_smk", "preg_ht", "parity_bin", "ethn3_m", "height_m", 
-  "prepreg_bmi", "agebirth_m_y", "areases_tert_preg", 
-  "areases_quint_preg", "areases_tert_1", "areases_quint_1")
+  "prepreg_bmi", "agebirth_m_y")
 
 other.vars <- c(
   "age_days.730", "age_days.1461", "age_days.2922", "age_days.5113", 
@@ -745,8 +713,8 @@ ds.Boole(
   na.assign = 0, 
   newobj = "valid_case")
 
-datashield.workspace_save(conns, "bmi_poc_sec_12a")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_12a")
+datashield.workspace_save(conns, "bmi_poc_sec_11a")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_11a")
 
 ## Check how many valid cases to make sure it's plausible
 ds.summary("valid_case")
@@ -773,9 +741,11 @@ var_index %>%
       newobj = "analysis_df", 
       datasources = conns[.y]))
 
+ds.levels("analysis_df$area_dep")
+
 ## ---- Check that this has worked ok ------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_12")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
+datashield.workspace_save(conns, "bmi_poc_sec_11")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
 
 #dh.tidyEnv(obj = "analysis_df", type = "keep", conns = conns)
 
