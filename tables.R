@@ -17,11 +17,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 
-install.packages("lubridate")
-install.packages("tidyverse")
-install.packages("tidyr")
-
-ls("package:dsBaseClient")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
 ################################################################################
 # METHODS  
@@ -29,20 +25,78 @@ ls("package:dsBaseClient")
 ################################################################################
 # List participating cohorts  
 ################################################################################
-names(opals)
+names(conns) %>% sort()
 
 ################################################################################
 # Maximum sample size
 ################################################################################
+
+## ---- Analysis dataset -------------------------------------------------------
 cohort_ns <- descriptives_ss[[1]] %>%
   filter(variable == "sex" & category == 1) %>%
   select(cohort, cohort_n) %>%
-  arrange(cohort) %>%
+  arrange(cohort) 
+
+## ---- Original dataset -------------------------------------------------------
+original_n <- dh.getStats(
+  df = "nonrep", 
+  vars = "sex",
+  conns = conns
+)
+
+original_n[[1]] %>%
+  filter(variable == "sex" & category == 1) %>%
+  select(cohort, cohort_n) %>%
+  arrange(cohort) 
+
+
+################################################################################
+# Data prep  
+################################################################################
+
+## Probably overkill, but it's neater this way
+ref_tab <- cohort_ns %>%
   mutate(
-    cohort_n = as.character(cohort_n),
-    cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
-                     "RAINE", "Combined"),
-    comb = paste0(cohort_neat, " (n=", cohort_n, ")"))
+    cohort_neat = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "elfe" ~ "ELFE",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "nfbc86" ~ "NFBC86",
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "sws" ~ "SWS",
+      cohort == "combined" ~ "Combined"),
+    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
+  )
+
+
+################################################################################
+# Table S4: Outcomes descriptive statistics  
+################################################################################
+outcomes.tab <- descriptives$continuous %>%
+  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
+                         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
+                         "age_months.168", "age_months.215")) %>%
+  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
+  select(cohort, variable, med_range, valid_n) %>%
+  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  select(cohort, names_neat, valid_n_bmi.730, med_range_age_months.24, med_range_bmi.730, 
+         valid_n_bmi.1461, med_range_age_months.48, med_range_bmi.1461,
+         valid_n_bmi.2922, med_range_age_months.96, med_range_bmi.2922,
+         valid_n_bmi.5113, med_range_age_months.168, med_range_bmi.5113, 
+         valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
+  arrange(names_neat)
+
+write.csv(outcomes.tab)
+
+## ---- Available n by cohort --------------------------------------------------
+ds.summary("analysis_df", datasources = coh())
+
 
 
 ################################################################################
@@ -121,28 +175,6 @@ exposure.tab <- cbind(exposure_cat, select(exposure_cont, -cohort)) %>%
 
 write.csv(exposure.tab)
 
-################################################################################
-# Table 2: Outcomes descriptive statistics  
-################################################################################
-outcomes.tab <- descriptives_ss$continuous %>%
-  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
-         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
-         "age_months.168", "age_months.215")) %>%
-  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
-  select(cohort, variable, med_range, valid_n) %>%
-  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
-  select(cohort, valid_n_bmi.730, med_range_age_months.24, med_range_bmi.730, 
-         valid_n_bmi.1461, med_range_age_months.48, med_range_bmi.1461,
-         valid_n_bmi.2922, med_range_age_months.96, med_range_bmi.2922,
-         valid_n_bmi.5113, med_range_age_months.168, med_range_bmi.5113, 
-         valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
-  arrange(cohort) %>%
-  mutate(cohort = cohort_ns$comb)
-
-write.csv(outcomes.tab)
-
-## ---- Available n by cohort --------------------------------------------------
-ds.summary("analysis_df", datasources = coh())
 
 
 ################################################################################
