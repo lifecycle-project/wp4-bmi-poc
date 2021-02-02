@@ -393,7 +393,7 @@ area_dep.plot <- ggplot(data = area_dep.pdata,
   facet_grid(age ~ variable, scales = "fixed", switch = "y") + 
   forest_theme +
   coord_flip() +
-  ylim(-6, 4) +
+  ylim(-2, 2) +
   scale_colour_manual(values = palette_n)
 
 ggsave(
@@ -421,7 +421,7 @@ ndvi.plot <- ggplot(data = ndvi.pdata,
 ggsave(
   filename="./figures/ndvi.png", 
   plot = ndvi.plot, 
-  h = 7, w = 15.92, units="cm", dpi=1200,
+  h = 12, w = 15.92, units="cm", dpi=1200,
   device="png")
 
 ## ---- Pregnancy diabetes -----------------------------------------------------
@@ -443,8 +443,70 @@ preg_dia.plot <- ggplot(data = preg_dia.pdata,
 ggsave(
   filename="./figures/preg_dia.png", 
   plot = preg_dia.plot, 
-  h = 7, w = 15.92, units="cm", dpi=1200,
+  h = 20, w = 15.92, units="cm", dpi=1200,
   device="png")
+
+
+################################################################################
+# Interactions  
+################################################################################
+mat_ed_int.tab <- mat_ed_int.fit[[1]] %>% 
+  map(dh.glmTab, type = "ipd")
+
+area_dep_int.tab <- area_dep_int.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd")
+
+ndvi_int.tab <- ndvi_int.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd")
+
+preg_dia_int.tab <- preg_dia_int.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd")
+
+################################################################################
+# Removeing DNBC and MoBa  
+################################################################################
+mat_ed_remove.tab <- mat_ed_remove.fit[[1]] %>% 
+  map(dh.glmTab, type = "ipd") %>%
+  reduce(left_join, by = "variable") %>%
+  filter(variable %in% c("edu_m2", "edu_m3")) 
+
+area_dep_remove.tab <- area_dep_remove.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd") %>%
+  reduce(left_join, by = "variable") %>%
+  filter(variable %in% c("area_dep2", "area_dep3")) 
+
+ndvi_remove.tab <- ndvi_remove.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd") %>%
+  reduce(left_join, by = "variable") %>%
+  filter(variable == "ndvi") 
+
+preg_dia_remove.tab <- preg_dia_remove.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd") %>%
+  reduce(left_join, by = "variable") %>%
+  filter(variable == "preg_dia1") 
+
+ipd_remove.tab <- bind_rows(mat_ed_remove.tab, area_dep_remove.tab, 
+                            ndvi_remove.tab, preg_dia_remove.tab)
+
+colnames(ipd_remove.tab) <- c(
+  "variable", "age_0_24", "age_25_48", "age_49_96", "age_96_168", "age_169_215")
+
+write.csv(ipd_remove.tab)
+
+
+## ---- Sample sizes for removed analyses --------------------------------------
+mat_ed_remove_n <- mat_ed_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
+area_dep_remove_n <- area_dep_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
+ndvi_remove_n <- ndvi_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
+preg_dia_remove_n <- preg_dia_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
+
+ipd_remove_ns.tab <- bind_rows(mat_ed_remove_n, area_dep_remove_n, 
+                               ndvi_remove_n, preg_dia_remove_n) %>%
+  mutate(exposure = c("mat_ed", "area_dep", "ndvi", "preg_dia")) %>%
+  select(exposure, everything())
+
+write.csv(ipd_remove_ns.tab)
+
 
 ################################################################################
 # October 2020 GA sample size visualisation  

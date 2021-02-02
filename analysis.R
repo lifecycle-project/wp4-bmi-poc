@@ -235,19 +235,27 @@ dh.glmWrap <- function(x, type, dummy_suff = "_dummy", data = "analysis_df"){
 }
 
 
-## ---- Remove elements from model list ----------------------------------------
-dh.removeTerm <- function(model, var, category){
+## ---- Change elements from model list ----------------------------------------
+dh.changeForm <- function(model, var, type = c("add", "remove"), category){
+  
+  if(type == "remove"){
+  
   model %>% map(function(x){list_modify(x, !!category := x[[category]][!x[[category]] %in% var])})
-}
+  } else if(type == "add"){
 
+  model %>% map(function(x){list_modify(x, !!category := c(x[[category]], var))})
+  }
+  
+}
 
 ################################################################################
 # 4. TEMPORARY: REMOVE NFBC IN ORDER TO MAKE SLMA WORK  
 ################################################################################
-mat_ed_nfbc.mod <- dh.removeTerm(
+mat_ed_nfbc.mod <- dh.changeForm(
   model = mat_ed.mod, 
   var = "nfbc86", 
-  category = "cohorts")
+  category = "cohorts", 
+  type = "remove")
 
 
 ################################################################################
@@ -284,135 +292,114 @@ save.image()
 
 
 ################################################################################
-# Repeat analyses stratified by sex  
-################################################################################
-################################################################################
-# 6. Prepare data  
+# 6. Test for interactions by sex  
 ################################################################################
 
-## ---- Create sex-stratified subsets ------------------------------------------
-ds.dataFrameSubset(
-  df.name = "analysis_df", 
-  V1.name = "analysis_df$sex", 
-  V2.name = "1", 
-  Boolean.operator = "==", 
-  keep.NAs = FALSE, 
-  newobj = "analysis_df_m")
-
-ds.dataFrameSubset(
-  df.name = "analysis_df", 
-  V1.name = "analysis_df$sex", 
-  V2.name = "2", 
-  Boolean.operator = "==", 
-  keep.NAs = FALSE, 
-  newobj = "analysis_df_f")
-
-
-datashield.workspace_save(conns, "bmi_poc_sec_12")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
-
-
-
-## ---- Create amended models --------------------------------------------------
-mat_ed_sex.mod <- dh.removeTerm(
+## ---- Modify model definitions -----------------------------------------------
+mat_ed_int.mod <- dh.changeForm(
   model = mat_ed.mod, 
-  var = "sex", 
-  category = "covariates")
+  var = "edu_m*sex", 
+  category = "covariates", 
+  type = "add")
+  
+area_dep_int.mod <- dh.changeForm(
+  model = area_dep.mod, 
+  var = "area_dep*sex", 
+  category = "covariates", 
+  type = "add")
 
-ndvi_sex.mod <- dh.removeTerm(
+ndvi_int.mod <- dh.changeForm(
   model = ndvi.mod, 
-  var = "sex", 
-  category = "covariates")
+  var = "ndvi*sex", 
+  category = "covariates", 
+  type = "add")
 
-preg_dia_sex.mod <- dh.removeTerm(
+preg_dia_int.mod <- dh.changeForm(
   model = preg_dia.mod, 
-  var = "sex", 
-  category = "covariates")
+  var = "preg_dia*sex", 
+  category = "covariates", 
+  type = "add")
+  
+## ---- Run interaction models -------------------------------------------------
+mat_ed_int.fit <- list(
+  ipd = mat_ed_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  slma = NULL
+)
+
+area_dep_int.fit <- list(
+  ipd = area_dep_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  slma = NULL
+)
+
+ndvi_int.fit <- list(
+  ipd = ndvi_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  slma = NULL
+)
+
+preg_dia_int.fit <- list(
+  ipd = preg_dia_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  slma = NULL
+)
+
 
 
 ################################################################################
-# 7. Run sex-stratified models  
+# 7. Repeat analyses removing DNBC and MoBa  
 ################################################################################
-
-## ---- Maternal education -----------------------------------------------------
-mat_ed_m.fit <- list(
-  ipd = mat_ed_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = mat_ed_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-mat_ed_f.fit <- list(
-  ipd = mat_ed_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = mat_ed_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-
-## ---- NDVI -------------------------------------------------------------------
-ndvi_m.fit <- list(
-  ipd = ndvi_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = ndvi_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-ndvi_f.fit <- list(
-  ipd = ndvi_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = ndvi_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-
-
-## ---- Pregnancy diabetes -----------------------------------------------------
-preg_dia_m.fit <- list(
-  ipd = preg_dia_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = preg_dia_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-preg_dia <- list(
-  ipd = preg_dia_sex.mod %>% map(dh.regWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = preg_dia_sex.mod %>% map(dh.regWrap, type = "slma", data = "analysis_df_m")
-)
-
-
-################################################################################
-# 8. Repeat analyses removing DNBC and MoBa  
-################################################################################
-
 
 ## ---- Amend model definitions ------------------------------------------------
-mat_ed_remove.mod <- dh.removeTerm(
+mat_ed_remove.mod <- dh.changeForm(
   model = mat_ed.mod, 
   var = c("dnbc", "moba"), 
-  category = "cohorts")
+  category = "cohorts", 
+  type = "remove")
 
-ndvi_remove.mod <- dh.removeTerm(
+area_dep_remove.mod <- dh.changeForm(
+  model = area_dep.mod, 
+  var = c("dnbc", "moba"), 
+  category = "cohorts", 
+  type = "remove")
+
+ndvi_remove.mod <- dh.changeForm(
   model = ndvi.mod, 
   var = c("dnbc", "moba"), 
-  category = "cohorts")
+  category = "cohorts", 
+  type = "remove")
 
-preg_dia_remove.mod <- dh.removeTerm(
+preg_dia_remove.mod <- dh.changeForm(
   model = preg_dia.mod, 
   var = c("dnbc", "moba"), 
-  category = "cohorts")
+  category = "cohorts", 
+  type = "remove")
 
 
-
-## ---- Create amended models --------------------------------------------------
-
-## Maternal education
+## ---- Run models -------------------------------------------------------------
 mat_ed_remove.fit <- list(
-  ipd = mat_ed_remove.mod %>% map(dh.regWrap, type = "ipd"), 
-  slma = mat_ed_remove.mod %>% map(dh.regWrap, type = "slma")
+  ipd = mat_ed_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  slma = NULL
 )
 
-## NDVI
+## ---- Area deprivation -------------------------------------------------------
+area_dep_remove.fit <- list(
+  ipd = area_dep_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  slma = NULL
+)
+
+## ---- NDVI -------------------------------------------------------------------
 ndvi_remove.fit <- list(
-  ipd = ndvi_remove.mod %>% map(dh.regWrap, type = "ipd"), 
-  slma = ndvi_remove.mod %>% map(dh.regWrap, type = "slma")
+  ipd = ndvi_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  slma = NULL
 )
 
-## Pregnancy diabetes
+## ---- Gestational diabetes ---------------------------------------------------
 preg_dia_remove.fit <- list(
-  ipd = preg_dia_remove.mod %>% map(dh.regWrap, type = "ipd"), 
-  slma = preg_dia_remove.mod %>% map(dh.regWrap, type = "slma")
+  ipd = preg_dia_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  slma = NULL
 )
+
+
+
+
 
 
 save.image()
