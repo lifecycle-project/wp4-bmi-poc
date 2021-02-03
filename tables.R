@@ -18,8 +18,30 @@ library(tidyr)
 library(purrr)
 library(ggplot2)
 
-
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
+
+################################################################################
+# Data prep  
+################################################################################
+
+## Make tibble of cohort names and sample sizes as I want to display in paper
+ref_tab <- cohort_ns %>%
+  mutate(
+    cohort_neat = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "elfe" ~ "ELFE",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "nfbc86" ~ "NFBC86",
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "sws" ~ "SWS",
+      cohort == "combined" ~ "Combined"),
+    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
+  )
 
 ################################################################################
 # METHODS  
@@ -53,28 +75,8 @@ original_n[[1]] %>%
 
 
 ################################################################################
-# Data prep  
+# RESULTS  
 ################################################################################
-
-## Probably overkill, but it's neater this way
-ref_tab <- cohort_ns %>%
-  mutate(
-    cohort_neat = case_when(
-      cohort == "chop" ~ "CHOP",
-      cohort == "dnbc" ~ "DNBC",
-      cohort == "elfe" ~ "ELFE",
-      cohort == "gecko" ~ "GECKO",
-      cohort == "genr" ~ "Gen-R", 
-      cohort == "inma" ~ "INMA", 
-      cohort == "moba" ~ "MoBa", 
-      cohort == "nfbc86" ~ "NFBC86",
-      cohort == "ninfea" ~ "NINFEA",
-      cohort == "raine" ~ "Raine",
-      cohort == "sws" ~ "SWS",
-      cohort == "combined" ~ "Combined"),
-    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
-  )
-
 ################################################################################
 # Table S4: Covariate descriptive statistics  
 ################################################################################
@@ -106,7 +108,6 @@ cov.tab <- bind_cols(cov_cat.tab, select(cov_cont.tab, -cohort)) %>%
 
 write.csv(cov.tab)
 
-
 ################################################################################
 # Table 1: Exposures descriptive statistics  
 ################################################################################
@@ -136,8 +137,8 @@ write.csv(exposure.tab)
 ################################################################################
 outcomes.tab <- descriptives$continuous %>%
   filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
-                         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
-                         "age_months.168", "age_months.215")) %>%
+                         "bmi.6544", "age_months.24", "age_months.48", 
+                         "age_months.96", "age_months.168", "age_months.215")) %>%
   mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
   select(cohort, variable, med_range, valid_n) %>%
   pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
@@ -228,10 +229,14 @@ ipd_ns.tab <- bind_rows(mat_ed_n, area_dep_n, ndvi_n, preg_dia_n) %>%
 
 write.csv(ipd_ns.tab)
 
+################################################################################
+# PLOTS  
+################################################################################
+################################################################################
+# Prepare data for plotting
+################################################################################
 
-################################################################################
-# Forest plot function
-################################################################################
+## ---- Function to create dataset from model objects --------------------------
 dh.forestData <- function(obj, mod){
   
 ## By study
@@ -276,6 +281,7 @@ dh.forestData <- function(obj, mod){
   
 }
 
+## ---- Create plot data -------------------------------------------------------
 mat_ed.pdata <- list(mat_ed.fit[[2]], mat_ed_nfbc.mod) %>% 
   pmap(dh.forestData) %>%
   bind_rows(.id = "age") %>%
@@ -305,38 +311,14 @@ slma.pdata <- bind_rows(mat_ed.pdata, area_dep.pdata, ndvi.pdata, preg_dia.pdata
                             "Age 169-215")),
     Cohort = factor(cohort_neat, levels = rev(unique(cohort_neat)), ordered = TRUE))
 
-levels(slma.pdata$age)
 
 ################################################################################
-# Theme  
+# Figure S1: maternal education SLMA
 ################################################################################
-forest_theme <-   theme(
-  plot.background = element_rect(fill =scales::alpha("#CCCCCC", 0.3)),  #Background outside of plot
-  panel.background = element_rect(fill="white"),  #Background for plot
-  panel.grid.major=element_line(colour="grey"), #Major and minor gridlines
-  panel.grid.minor=element_line(colour="white"), 
-  panel.spacing = unit(1, "lines"),
-  plot.title = element_text(hjust = 0, vjust=0, size=11, face="bold"), #Plot title, thought don't tend to use
-  text=element_text(size=10), #General text 
-  axis.title.y = element_text(family="ArialMT", size=11, margin = margin(t = 0, r = 10, b = 0, l = 0)), #Axis labels
-  axis.title.x = element_text(family="ArialMT", size=11, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-  axis.text.x = element_text(family="ArialMT", size=8, margin = margin(t = 4, r=0, b=0, l=0), colour="black"), #Axis text
-  axis.text.y = element_text(family="ArialMT", size=8, margin = margin(t = 0, r=4, b=0, l=0), colour="black"),
-  axis.ticks.length=unit(0.3, "cm"),
-  axis.ticks = element_line(colour = "grey"),
-  strip.text.x = element_text(family="ArialMT", size=11),
-  strip.text.y = element_text(family="ArialMT", size=8, face = "bold"),
-  strip.background = element_blank(),
-  plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
-  legend.position = "none") 
-
-
-################################################################################
-# Education  
-################################################################################
+source('~/useful-code-r/code/themes/forest-theme.R')
 palette_n <- c("#ff2600", rep("#005690", 10))
 
-## ---- Sort data --------------------------------------------------------------
+## ---- Prepare data -----------------------------------------------------------
 mat_ed.pdata <- slma.pdata %>% 
   filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")) %>%
   mutate(  
@@ -349,7 +331,6 @@ mat_ed.pdata <- slma.pdata %>%
                  "Low education (ref = high)"),
       ordered = TRUE)
   )
-
 
 ## ---- Plot -------------------------------------------------------------------
 mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
@@ -369,6 +350,7 @@ mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = Cohort,y = beta, ymin = ci_5,
       colour="black")
   )
 
+## ---- Save plot --------------------------------------------------------------
 ggsave(
   filename="./figures/mat_ed.png", 
   plot = mat_ed.plot,
@@ -376,14 +358,19 @@ ggsave(
   device="png")
 
 
-## ---- Area deprivation -------------------------------------------------------
+################################################################################
+# Figure S2: Area deprivation SLMA  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
 area_dep.pdata <- slma.pdata %>% 
   filter(exposure == "area_dep" & variable %in% c("area_dep2", "area_dep3")) %>%
   mutate(
     variable = factor(variable, levels = c("area_dep2", "area_dep3"),
                       labels = c("Medium deprivation (ref = low)", 
                                  "High deprivation (ref = low)")))
-    
+
+## ---- Plot -------------------------------------------------------------------
 area_dep.plot <- ggplot(data = area_dep.pdata,
                     aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = Cohort), size = 0.3) +
@@ -396,6 +383,7 @@ area_dep.plot <- ggplot(data = area_dep.pdata,
   ylim(-2, 2) +
   scale_colour_manual(values = palette_n)
 
+## ---- Save plot --------------------------------------------------------------
 ggsave(
   filename="./figures/area_dep.png", 
   plot = area_dep.plot, 
@@ -403,9 +391,14 @@ ggsave(
   device="png")
 
 
-## ---- NDVI -------------------------------------------------------------------
+################################################################################
+# Figure S3: NDVI  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
 ndvi.pdata <- slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi") 
 
+## ---- Plot -------------------------------------------------------------------
 ndvi.plot <- ggplot(data = ndvi.pdata,
        aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = Cohort), size = 0.3) +
@@ -418,37 +411,47 @@ ndvi.plot <- ggplot(data = ndvi.pdata,
   ylim(-6, 4) +
   scale_colour_manual(values = palette_n)
 
+## ---- Save plot --------------------------------------------------------------
 ggsave(
   filename="./figures/ndvi.png", 
   plot = ndvi.plot, 
   h = 12, w = 15.92, units="cm", dpi=1200,
   device="png")
 
-## ---- Pregnancy diabetes -----------------------------------------------------
+
+################################################################################
+# Figure S4: Gestational diabetes  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
 preg_dia.pdata <- slma.pdata %>% 
   filter(variable == "preg_dia1" & exposure == "preg_dia")
   
+## ---- Plot -------------------------------------------------------------------
 preg_dia.plot <- ggplot(data = preg_dia.pdata,
        aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
   geom_pointrange(aes(colour = Cohort), size = 0.2) +
   geom_hline(aes(fill=Cohort),yintercept =0, linetype=2) + 
   xlab('Cohort')+ 
-  ylab("Difference in chilhood BMI where gestational diabetes occured") +
+  ylab("Difference in chilhood BMI where gestational diabetes present") +
   facet_wrap(~age, strip.position = "left", nrow = 4) + 
   forest_theme +
   coord_flip() +
   ylim(-1, 2) +
   scale_colour_manual(values = palette_n)
 
+## ---- Save plot --------------------------------------------------------------
 ggsave(
   filename="./figures/preg_dia.png", 
   plot = preg_dia.plot, 
   h = 20, w = 15.92, units="cm", dpi=1200,
   device="png")
 
-
 ################################################################################
-# Interactions  
+# SENSITIVITY ANALYSES
+################################################################################
+################################################################################
+# Sex interactions
 ################################################################################
 mat_ed_int.tab <- mat_ed_int.fit[[1]] %>% 
   map(dh.glmTab, type = "ipd")
@@ -465,6 +468,8 @@ preg_dia_int.tab <- preg_dia_int.fit[[1]] %>%
 ################################################################################
 # Removeing DNBC and MoBa  
 ################################################################################
+
+## ---- Table of coefficients --------------------------------------------------
 mat_ed_remove.tab <- mat_ed_remove.fit[[1]] %>% 
   map(dh.glmTab, type = "ipd") %>%
   reduce(left_join, by = "variable") %>%
@@ -494,7 +499,7 @@ colnames(ipd_remove.tab) <- c(
 write.csv(ipd_remove.tab)
 
 
-## ---- Sample sizes for removed analyses --------------------------------------
+## ---- Sample sizes -----------------------------------------------------------
 mat_ed_remove_n <- mat_ed_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
 area_dep_remove_n <- area_dep_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
 ndvi_remove_n <- ndvi_remove.fit[[1]] %>% map_int(function(x){x$Nvalid})
@@ -508,6 +513,9 @@ ipd_remove_ns.tab <- bind_rows(mat_ed_remove_n, area_dep_remove_n,
 write.csv(ipd_remove_ns.tab)
 
 
+################################################################################
+# OLD ANALYSES
+################################################################################
 ################################################################################
 # October 2020 GA sample size visualisation  
 ################################################################################
@@ -561,18 +569,3 @@ ggsave(
   plot = sample.plot, 
   dpi=300, 
   device="png")
-
-
-
-
-
-x_axis <- scale_x_continuous(expand = c(0, 0)) # Removes space before 0
-y_axis <- scale_y_continuous(expand = c(0, 0))
-
-geom_errorbarh(
-  aes(xmin = perc_5, xmax = perc_95, colour = cohort), 
-  size=0.2, cex=1, height = 0.3) +
-
-geom_rect(xmin = 0, xmax = 24, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +
-  geom_rect(xmin = 48, xmax = 96, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +
-  geom_rect(xmin = 168, xmax = 215, ymin = 0, ymax = Inf, size = 0, alpha = 0.002) +

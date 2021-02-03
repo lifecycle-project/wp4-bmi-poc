@@ -264,32 +264,47 @@ mat_ed_nfbc.mod <- dh.changeForm(
 
 ## ---- Maternal education -----------------------------------------------------
 mat_ed.fit <- list(
-  ipd = mat_ed.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
-  slma = mat_ed_nfbc.mod %>% map(dh.makeGlmForm, type = "slma") %>% map(dh.glmWrap, type = "slma")
+  ipd = mat_ed.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
+  slma = mat_ed_nfbc.mod %>% 
+    map(dh.makeGlmForm, type = "slma") %>% 
+    map(dh.glmWrap, type = "slma")
 )
 
 
 ## ---- Area deprivation -------------------------------------------------------
 area_dep.fit <- list(
-  ipd = area_dep.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
-  slma = area_dep.mod %>% map(dh.makeGlmForm, type = "slma") %>% map(dh.glmWrap, type = "slma")
+  ipd = area_dep.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
+  slma = area_dep.mod %>% 
+    map(dh.makeGlmForm, type = "slma") %>% 
+    map(dh.glmWrap, type = "slma")
 )
 
 
 ## ---- NDVI -------------------------------------------------------------------
 ndvi.fit <- list(
-  ipd = ndvi.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
-  slma = ndvi.mod %>% map(dh.makeGlmForm, type = "slma") %>% map(dh.glmWrap, type = "slma")
+  ipd = ndvi.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
+  slma = ndvi.mod %>% 
+    map(dh.makeGlmForm, type = "slma") %>% 
+    map(dh.glmWrap, type = "slma")
 )
 
 ## ---- Gestational diabetes ---------------------------------------------------
 preg_dia.fit <- list(
-  ipd = preg_dia.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
-  slma = preg_dia.mod %>% map(dh.makeGlmForm, type = "slma") %>% map(dh.glmWrap, type = "slma")
+  ipd = preg_dia.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
+  slma = preg_dia.mod %>% 
+    map(dh.makeGlmForm, type = "slma") %>% 
+    map(dh.glmWrap, type = "slma")
 )
 
 save.image()
-
 
 ################################################################################
 # 6. Test for interactions by sex  
@@ -322,25 +337,32 @@ preg_dia_int.mod <- dh.changeForm(
   
 ## ---- Run interaction models -------------------------------------------------
 mat_ed_int.fit <- list(
-  ipd = mat_ed_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  ipd = mat_ed_int.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
   slma = NULL
 )
 
 area_dep_int.fit <- list(
-  ipd = area_dep_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  ipd = area_dep_int.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
   slma = NULL
 )
 
 ndvi_int.fit <- list(
-  ipd = ndvi_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  ipd = ndvi_int.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
   slma = NULL
 )
 
 preg_dia_int.fit <- list(
-  ipd = preg_dia_int.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  ipd = preg_dia_int.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
   slma = NULL
 )
-
 
 
 ################################################################################
@@ -375,31 +397,34 @@ preg_dia_remove.mod <- dh.changeForm(
 
 ## ---- Run models -------------------------------------------------------------
 mat_ed_remove.fit <- list(
-  ipd = mat_ed_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"), 
+  ipd = mat_ed_remove.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"), 
   slma = NULL
 )
 
 ## ---- Area deprivation -------------------------------------------------------
 area_dep_remove.fit <- list(
-  ipd = area_dep_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  ipd = area_dep_remove.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
   slma = NULL
 )
 
 ## ---- NDVI -------------------------------------------------------------------
 ndvi_remove.fit <- list(
-  ipd = ndvi_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  ipd = ndvi_remove.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
   slma = NULL
 )
 
 ## ---- Gestational diabetes ---------------------------------------------------
 preg_dia_remove.fit <- list(
-  ipd = preg_dia_remove.mod %>% map(dh.makeGlmForm, type = "ipd") %>% map(dh.glmWrap, type = "ipd"),
+  ipd = preg_dia_remove.mod %>% 
+    map(dh.makeGlmForm, type = "ipd") %>% 
+    map(dh.glmWrap, type = "ipd"),
   slma = NULL
 )
-
-
-
-
-
 
 save.image()
