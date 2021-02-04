@@ -20,28 +20,6 @@ library(ggplot2)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
-################################################################################
-# Data prep  
-################################################################################
-
-## Make tibble of cohort names and sample sizes as I want to display in paper
-ref_tab <- cohort_ns %>%
-  mutate(
-    cohort_neat = case_when(
-      cohort == "chop" ~ "CHOP",
-      cohort == "dnbc" ~ "DNBC",
-      cohort == "elfe" ~ "ELFE",
-      cohort == "gecko" ~ "GECKO",
-      cohort == "genr" ~ "Gen-R", 
-      cohort == "inma" ~ "INMA", 
-      cohort == "moba" ~ "MoBa", 
-      cohort == "nfbc86" ~ "NFBC86",
-      cohort == "ninfea" ~ "NINFEA",
-      cohort == "raine" ~ "Raine",
-      cohort == "sws" ~ "SWS",
-      cohort == "combined" ~ "Combined"),
-    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
-  )
 
 ################################################################################
 # METHODS  
@@ -72,6 +50,30 @@ original_n[[1]] %>%
   filter(variable == "sex" & category == 1) %>%
   select(cohort, cohort_n) %>%
   arrange(cohort) 
+
+
+################################################################################
+# Data prep  
+################################################################################
+
+## Make tibble of cohort names and sample sizes as I want to display in paper
+ref_tab <- cohort_ns %>%
+  mutate(
+    cohort_neat = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "elfe" ~ "ELFE",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "nfbc86" ~ "NFBC86",
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "sws" ~ "SWS",
+      cohort == "combined" ~ "Combined"),
+    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
+  )
 
 
 ################################################################################
@@ -151,11 +153,6 @@ outcomes.tab <- descriptives$continuous %>%
   arrange(names_neat)
 
 write.csv(outcomes.tab)
-
-## ---- Available n by cohort --------------------------------------------------
-ds.summary("analysis_df", datasources = coh())
-
-
 
 ################################################################################
 # Table S5 height and weight by age to check BMI validity  
