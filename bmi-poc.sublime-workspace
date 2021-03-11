@@ -1,0 +1,1175 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"ga",
+				"ga_norm_post42"
+			],
+			[
+				"edu_",
+				"edu_m_0"
+			],
+			[
+				"ed",
+				"edu_var"
+			],
+			[
+				"age_",
+				"age_15_18"
+			],
+			[
+				"tmp",
+				"tmp_3"
+			],
+			[
+				"edu",
+				"edu_m_0"
+			],
+			[
+				"bmi_",
+				"bmi_wide"
+			],
+			[
+				"cohort",
+				"cohort_id"
+			],
+			[
+				"effects",
+				"effects_1"
+			],
+			[
+				"eff",
+				"effects_3"
+			],
+			[
+				"age_c",
+				"age_cat.lab"
+			],
+			[
+				"parity",
+				"parity_bin"
+			],
+			[
+				"mutate",
+				"mutate_at"
+			],
+			[
+				"bmi",
+				"bmi_data"
+			],
+			[
+				"time",
+				"timevar"
+			],
+			[
+				"age",
+				"age_cat"
+			],
+			[
+				"weight",
+				"weight_ref"
+			],
+			[
+				"weigh",
+				"weight_age"
+			],
+			[
+				"height",
+				"height_ref"
+			],
+			[
+				"data",
+				"data_format"
+			],
+			[
+				"facto",
+				"factor_ref"
+			],
+			[
+				"data_",
+				"data_path"
+			],
+			[
+				"compl",
+				"complete.cases"
+			],
+			[
+				"extra",
+				"extra_imp.vars"
+			],
+			[
+				"measure",
+				"measurement_1"
+			],
+			[
+				"lr_",
+				"lr_tab_cc"
+			],
+			[
+				"fscore",
+				"fscore_cc.RData"
+			],
+			[
+				"monito",
+				"monitor_y"
+			],
+			[
+				"war",
+				"warmth_scores"
+			],
+			[
+				"warmth",
+				"warmth_f"
+			],
+			[
+				"warmt",
+				"warmth_scores"
+			],
+			[
+				"tpf_",
+				"tpf_pred.data"
+			],
+			[
+				"monit",
+				"monitor_y"
+			],
+			[
+				"tpf",
+				"tpf_comb.data"
+			],
+			[
+				"warm",
+				"warm_alpha"
+			],
+			[
+				"measureme",
+				"measurement_3"
+			],
+			[
+				"meas",
+				"measurement_1"
+			],
+			[
+				"tpf_pre",
+				"tpf_pred.data"
+			],
+			[
+				"cisR_",
+				"cisr_dep_18"
+			],
+			[
+				"imp",
+				"imp_sub.data"
+			],
+			[
+				"model",
+				"model_df"
+			],
+			[
+				"sdq_imp",
+				"sdq_imp_fit_1"
+			],
+			[
+				"sdq_im",
+				"sdq_imp_fit_1"
+			],
+			[
+				"parent",
+				"parent_comb.data"
+			],
+			[
+				"varna",
+				"varnames_sex"
+			],
+			[
+				"tee",
+				"teen-parenting"
+			],
+			[
+				"emoqual",
+				"emo_qual_rp"
+			],
+			[
+				"te",
+				"teen-parenting"
+			],
+			[
+				"pred",
+				"predicted_2f"
+			],
+			[
+				"Se",
+				"Self-harm"
+			],
+			[
+				"paren",
+				"parent_comb.data"
+			],
+			[
+				"knowl",
+				"knowl_tf1"
+			],
+			[
+				"stab",
+				"stab_mon.fit"
+			],
+			[
+				"correlat",
+				"correlation_matrix"
+			],
+			[
+				"correlation",
+				"correlations"
+			],
+			[
+				"cor_",
+				"cor_mh.data"
+			],
+			[
+				"pare",
+				"parent_comb.data"
+			],
+			[
+				"final",
+				"final_mod.tab"
+			],
+			[
+				"cont",
+				"cont_early"
+			],
+			[
+				"par",
+				"parent_comb.data"
+			],
+			[
+				"ear",
+				"earlyfact.data"
+			],
+			[
+				"vars",
+				"vars_in"
+			],
+			[
+				"long",
+				"longtable"
+			],
+			[
+				"book",
+				"booktabs"
+			],
+			[
+				"tpd",
+				"tpf_ord.data"
+			],
+			[
+				"tp",
+				"tpf_ord.data"
+			],
+			[
+				"disc",
+				"discipline_kw"
+			],
+			[
+				"tpf_yo",
+				"tpf_young.vars"
+			],
+			[
+				"kw",
+				"kw4010"
+			],
+			[
+				"strip",
+				"stripcol"
+			],
+			[
+				"st",
+				"stripe_color"
+			],
+			[
+				"useful",
+				"useful-code-r"
+			],
+			[
+				"acce",
+				"acceptance_y.mod"
+			],
+			[
+				"fac_",
+				"fac_yng.vars"
+			],
+			[
+				"fac",
+				"fac_yng.vars"
+			],
+			[
+				"mfq_",
+				"mfq_adj_plot"
+			],
+			[
+				"kable",
+				"kable_styling"
+			],
+			[
+				"semh_",
+				"semh_linked.data"
+			],
+			[
+				"connect",
+				"connect_14.vars"
+			],
+			[
+				"pp",
+				"ppfu_long.data"
+			],
+			[
+				"ppfu",
+				"ppfu_long.data"
+			],
+			[
+				"ppfu_",
+				"ppfu_long.data"
+			],
+			[
+				"fact",
+				"factor_key"
+			],
+			[
+				"mat_pers_bin",
+				"mat_pers_bin_num"
+			],
+			[
+				"mat_pers",
+				"mat_pers.data"
+			],
+			[
+				"exp",
+				"exponentiate"
+			],
+			[
+				"mat_",
+				"mat_finprob_early"
+			],
+			[
+				"mat",
+				"mat_moderators"
+			],
+			[
+				"mat_f",
+				"mat_finprob_late"
+			],
+			[
+				"mat_p",
+				"mat_pers_symp"
+			],
+			[
+				"latex",
+				"latex_options"
+			],
+			[
+				"col",
+				"col_fact_names"
+			],
+			[
+				"col_",
+				"col_var_names"
+			],
+			[
+				"dec",
+				"decreasing = \tArguments"
+			],
+			[
+				"full",
+				"full_width = \tArguments"
+			],
+			[
+				"para",
+				"parameterestimates\t{lavaan}"
+			],
+			[
+				"school",
+				"school-enjoyment-mh"
+			],
+			[
+				"sec",
+				"sec15.fit"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "################################################################################\n## Project: bmi-poc\n## Script purpose: Script for performing analysis\n## Date: 24.10.19\n## Author: Tim Cadman\n## Email: t.cadman@bristol.ac.uk\n################################################################################\n\nrequire(dplyr)\nrequire(magrittr)\nrequire(readstata13)\nrequire(miceadds)\nrequire(tableone)\nrequire(zscorer)\nrequire(reshape2)\n\n################################################################################\n# 1. Cohort-specific code  \n################################################################################\n\n# Note this is the only section of the code that cohorts are required to \n# make amendments to.\n\n# The only other choice cohorts need to make is which sections to run depending\n# on which exposures they have.\n\n\n## ---- Indicate form of LifeCycle data ----------------------------------------\n\n# Options are \"csv\", \"rdata\", \"stata\", e.g. \ndata_source <- \"rdata\"\n\n\n## ---- Provide paths for the lifecycle dataset --------------------------------\ndata_path <- \"z:/projects/ieu2/p6/048/working/data/wp1/wp1_data_16.09.19.RData\"\n\n\n## ---- Provide list of available exposures ------------------------------------\n\n## Delete exposures which are not available\nexposures <- c(\"edu_m_0\", \"edu_f1_0\", \"preg_dia\", \"ga_bj\")\n\n\n## ---- Provide list of available confounders ----------------------------------\n\n## Delete confounders which are not available. Note if you do not have the \n## exposure you don't need to delete the counfounder as the analysis will not\n## be run\nconfounders <- list(\n    edu_m_0 = \"sex\",\n    edu_f1_0 = \"sex\",\n    preg_dia = c(\"edu_m_0\", \"agebirth_m_y\", \"prepreg_weight\", \n                  \"height_m\", \"parity_m\", \"preg_smk\", \"sex\"),\n    ga_bj = c(\"edu_m_0\", \"ethn3_m\", \"prepreg_weight\", \"height_m\", \"preg_dia\",\n              \"preg_smk\", \"preeclam\", \"agebirth_m_y\", \"parity_m\", \"sex\"),\n    ndvi300_preg = c(\"edu_m_0\", \"ethn3_m\", \"sex\"),\n    green_dist_preg = c(\"edu_m_0\", \"ethn3_m\", \"sex\"),\n    green_size_preg = c(\"edu_m_0\", \"ethn3_m\", \"sex\"),\n    greenyn300_preg = c(\"edu_m_0\", \"ethn3_m\", \"sex\")\n    )\n\n\n# age at height/weight measurement\n\n## ---- Provide a list of available variables indicating type of measurement ---\nmeasurement <- c(\"prepreg_weight_mes\", \"height_mes_m\")\n\n\n## ---- State cohort -----------------------------------------------------------\n\n## Replace \"ALSPAC\" with your cohort name\ncohort <- \"ALSPAC\"\n\n\nexposures_mast <- c(\"edu_m_0\", \"edu_f1_0\", \"preg_dia\", \"ga_bj\", \"ndvi300_preg\",\n               \"green_dist_preg\", \"green_size_preg\", \"greenyn300_preg\")\n\nconfounders_mast <- list(\n    edu_m_0 = \"sex\",\n    edu_f1_0 = \"sex\",\n    preg_dia = c(\"edu_m_0\", \"agebirth_m_y\", \"prepreg_weight\", \n                  \"height_m\", \"parity_m\", \"preg_smk\", \"sex\"),\n    ga_bj = c(\"edu_m_0\", \"ethn3_m\", \"prepreg_weight\", \"height_m\", \"preg_dia\",\n              \"preg_smk\", \"preeclam\", \"agebirth_m_y\", \"parity_m\", \"sex\"),\n    ndvi300_preg = c(\"edu_m_0\", \"ethn3_m\", \"areases_quint_preg\", \"sex\"),\n    green_dist_preg = c(\"edu_m_0\", \"ethn3_m\", \"areases_quint_preg\", \"sex\"),\n    green_size_preg = c(\"edu_m_0\", \"ethn3_m\", \"areases_quint_preg\", \"sex\"),\n    greenyn300_preg = c(\"edu_m_0\", \"ethn3_m\", \"areases_quint_preg\", \"sex\")\n    )\n################################################################################\n# 2. Get data  \n################################################################################\n\nif(data_source == \"csv\"){\n\nbmi_data <- read.csv(data_path)\n\n} else if(data_source == \"rdata\"){\n\nload.Rdata(data_path, objname = \"bmi_data\")\n\n} else if(data_source == \"stata\"){\n\nbmi_data <- read.dta13(data_path)\n\n}\n\n\n################################################################################\n# 3. Keep only the variables we need for the analysis  \n################################################################################\n\nid_ref <- c(\"mother_id\", \"child_id\", \"cohort_id\")\n\nheight_ref <- vector()\nweight_ref <- vector()\nheight_age_ref <- vector()\nweight_age_ref <- vector()\n\nfor(i in 1:215){\nheight_ref[i] <- paste(\"height_\", i, sep = \"\")\nweight_ref[i] <- paste(\"weight_\", i, sep = \"\")\nheight_age_ref[i] <- paste(\"height_age\", i, sep = \"\")\nweight_age_ref[i] <- paste(\"weight_age\", i, sep = \"\")\n}\n\n\n## ---- Now we subset the data -------------------------------------------------\nconfounders_vec <- unique(unlist(confounders_mast, use.names = FALSE))\n\nbmi_data %<>%\nselect(one_of(exposures_mast, confounders_vec, measurement, height_ref, weight_ref,\n\t          height_age_ref, weight_age_ref, id_ref))\n\nwrite.csv(colnames(bmi_data), file = \"./bmi-poc/var_names for poc.csv\")\n\n################################################################################\n# 3. Set all data to be the correct variable types  \n################################################################################\nfactor_ref <- c(\"parity_m\", \"ethn3_m\",\"prepreg_weight_mes\", \"height_mes_m\", \n\t             \"sex\", \"preg_dia\", \"preeclam\", \"preg_smk\")\n\nbmi_data %<>%\nmutate_at(vars(one_of(factor_ref)), list(~ factor(.)))\n\n\n################################################################################\n# 3. Transform exposures  \n################################################################################\n\n## ---- Highest parental qualification -----------------------------------------\nif(all(c(\"edu_m_0\", \"edu_f1_0\") %in% exposures) == TRUE){\n\nbmi_data %<>%\nmutate(edu_par_0 = factor(pmin(edu_m_0, edu_f1_0)))\n\nexposures <- c(exposures, \"edu_par_0\")\nconfounders$edu_par_0 <- confounders$edu_m_0\n\nbmi_data %<>%\nmutate_at(vars(edu_m_0, edu_f1_0), list(~ factor(.)))\n\n} else {\n\nbmi_data %<>%\nmutate_at(vars(one_of(edu_m_0, edu_f1_0)), list(~ factor(.)))\n\n}\n\n\n## ---- Gestational age variables ----------------------------------------------\nif(\"ga_bj\" %in% exposures == TRUE){\n\nbmi_data %<>%\nmutate(ga_bj_weeks = ga_bj / 7,\n       ga_norm_pre37 = factor(ifelse(ga_bj_weeks >= 34 & ga_bj_weeks < 37, 1, 0)), \n       ga_norm_pre34 = factor(ifelse(ga_bj_weeks < 34, 1, 0)),\n       ga_norm_post42 = factor(ifelse(ga_bj_weeks > 42, 1, 0)))\n\nexposures <- c(exposures, \"ga_norm_pre37\", \"ga_norm_pre34\", \"ga_norm_post42\")\n\nconfounders$ga_norm_pre37 <- confounders$ga_bj\nconfounders$ga_norm_pre34 <- confounders$ga_bj\nconfounders$ga_norm_post42 <- confounders$ga_bj\n\n} else {}\n\n################################################################################\n# 4. Transform confounders  \n################################################################################\n\n## ---- Binary version of parity -----------------------------------------------\nif(\"parity_m\" %in% confounders_vec == TRUE){\n\nbmi_data %<>%\nmutate(parity_m = factor(ifelse(parity_m == 0, 0, 1)))\n\n} else{}\n\n## ---- Maternal BMI -----------------------------------------------------------\nif(all(c(\"prepreg_weight\", \"height_m\") %in% confounders_vec) == TRUE){\n\nbmi_data %<>%\nmutate(bmi_m = prepreg_weight/(height_m^2))\n\n} else{}\n\n\n################################################################################\n# 5. Create BMI variables  \n################################################################################\n\n## ---- First we convert to long format if data is wide ------------------------\nbmi_sub <- bmi_data %>%\nselect(child_id, height_ref, height_age_ref, weight_ref, weight_age_ref, sex)\n\nbmi_long <- reshape(data = bmi_sub,\n                    varying = list(height = height_ref, \n                    \t           height_age = height_age_ref, \n                    \t           weight = weight_ref,\n                    \t           weight_age = weight_age_ref),               \n                    direction = \"long\",\n                    idvar = \"child_id\",\n                    v.names = c(\"height\", \"height_age\", \"weight\", \"weight_age\"))\n\n\n## ---- Now we merge the age variables -----------------------------------------\nbmi_long %<>%\nmutate(age = coalesce(height_age, weight_age), \n\t   height_age = NULL,\n\t   weight_age = NULL)\n\n\n## ---- Create variable indicating age category --------------------------------\nbmi_long %<>%\nmutate(age_cat = as.factor(\n\tcase_when(\n    time <= 24 ~ \"0_2\",\n    time > 24 & time <= 48 ~ \"3_4\",\n    time > 48 & time <= 96 ~ \"5_8\",\n    time > 96 & time <= 168 ~ \"9_14\",\n    time > 168 ~ \"15_18\")))\n\n\n## ---- Drop NAs ---------------------------------------------------------------\nbmi_long %<>%\nfilter(!is.na(weight) & !is.na(height))\n\n\n## ---- Now we select one observation per subject per category -----------------\n\n## Rule is to select observation nearest the midpoint of the category\nbmi_long %<>%\ngroup_by(child_id, age_cat) %>%\nslice(ceiling(n()/2)) %>%\nungroup()\n\n## ---- Now we calculate BMI ---------------------------------------------------\n\n## Raw BMI\nbmi_long %<>% \nmutate(height_mtr = height / 100,\n\t   bmi_raw = weight/(height_mtr^2))\n\n## Internal z-score within age category\nbmi_long %<>%\ngroup_by(age_cat) %>% \nmutate(bmi_int_z = (bmi_raw - mean(bmi_raw, na.rm = TRUE)) / \n                   sd(bmi_raw, na.rm = TRUE)) %>%\nungroup()\n\n## WHO BMI for age\nbmi_long <- addWGSR(data = bmi_long, sex = \"sex\", firstPart = \"weight\",\n                    secondPart = \"height\", thirdPart = \"age\", index = \"bfa\", \n                    output = \"bmi_age_z\")\n\nbmi_long %>%\ndplyr::select(height, weight, age, bmi_age_z) %>%\nhead()\n\n\n## ---- Now we convert back to wide format -------------------------------------\ntmp <- melt(bmi_long, measure.vars = c(\"bmi_raw\", \"bmi_int_z\", \"bmi_age_z\"))\n\nbmi_wide <- dcast(tmp, formula = child_id ~ variable + age_cat, \n\t                   value.var = \"value\")\n\nbmi_wide <- merge(bmi_data, bmi_wide, by = \"child_id\")\n\n\n################################################################################\n# 6. Create descriptive statistics  \n################################################################################\n\n## ---- Exposures --------------------------------------------------------------\nexposures_desc.tab <- bmi_wide %>%\nselect(one_of(exposures)) %>%\nCreateTableOne(data = ., includeNA = TRUE) %>%\nprint(., quote = FALSE, noSpaces = TRUE, printToggle = FALSE, format = \"f\",\n         test = FALSE, varLabels = TRUE)\n\nwrite.csv(exposures_desc.tab, \n    file = paste0(\"Exposures descriptives_\", cohort, \".csv\"))\n\n\n## ---- Confounders ------------------------------------------------------------\nconfounders_desc.tab <- bmi_wide %>%\nselect(one_of(confounders_vec)) %>%\nCreateTableOne(data = ., includeNA = TRUE) %>%\nprint(., quote = FALSE, noSpaces = TRUE, printToggle = FALSE, format = \"f\",\n         test = FALSE, varLabels = TRUE)\n\nwrite.csv(confounders_desc.tab, \n    file = paste0(\"Confounders descriptives_\", cohort, \".csv\"))\n\n## ---- Outcome ----------------------------------------------------------------\noutcomes_ref <- c(\"bmi_raw_0_2\", \"bmi_int_z_0_2\", \"bmi_age_z_0_2\",\n                  \"bmi_raw_3_4\", \"bmi_int_z_3_4\", \"bmi_age_z_3_4\",\n                  \"bmi_raw_5_8\", \"bmi_int_z_5_8\", \"bmi_age_z_5_8\",\n                  \"bmi_raw_9_14\", \"bmi_int_z_9_14\", \"bmi_age_z_9_14\",\n                  \"bmi_raw_15_18\", \"bmi_int_z_15_18\", \"bmi_age_z_15_18\")\n             \noutcomes_desc.tab <- bmi_wide %>%\nselect(one_of(outcomes_ref)) %>%\nCreateTableOne(data = ., includeNA = TRUE) %>%\nprint(., quote = FALSE, noSpaces = TRUE, printToggle = FALSE, format = \"f\",\n         test = FALSE, varLabels = TRUE)\n\nwrite.csv(outcomes_desc.tab, \n    file = paste0(\"Outcomes descriptives_\", cohort, \".csv\"))\n\n\n################################################################################\n# 7. Run models  \n################################################################################\n\nregs <- list()\n\nfor(i in exposures){\n\nregs[[i]] <- bmiPoc(exp = i, conf = confounders[[i]], coh = cohort)\n\n}\n\ncombined_output <- do.call(\"rbind\", regs)\n\nsave(combined_output, \n    file = paste0(\"Combined output for all exposures_\", cohort))",
+			"file": "code/bmi-poc-draft-analysis.r",
+			"file_size": 12071,
+			"file_write_time": 132168397409432148,
+			"settings":
+			{
+				"buffer_size": 11807,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "test.csv",
+			"settings":
+			{
+				"buffer_size": 298,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "\"\",\"genr.class\",\"genr.length\",\"genr.categories\",\"g"
+			}
+		},
+		{
+			"file": "code/test_ds.R",
+			"settings":
+			{
+				"buffer_size": 7339,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/C/Users/tc18889/OneDrive - University of Bristol/repos/useful-code-r/code/useful-code-r-packages.r",
+			"settings":
+			{
+				"buffer_size": 3370,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "################################################################################\n## Project: bmi-poc\n## Script purpose: Functions for analysis and tables\n## Date: 29th October 2019\n## Author: Tim Cadman\n## Email: t.cadman@bristol.ac.uk\n################################################################################\n\n################################################################################\n# 1. lmWrap\n################################################################################\n\n## This is just a wrapper to neaten up the lm code by specifying the data\n\nlmWrap <- function(formula){\n\nlm(formula, data = bmi_wide)    \n}\n\n\n################################################################################\n# 2. rlapply  \n################################################################################\n\n## A wrapper for lapply which rbinds the output\nrlapply <- function(...){\n\ndo.call(rbind, lapply(...))\n\n}\n\n\n################################################################################\n# 3. bmiTab \n################################################################################\n\nx <- results$age_9_14$raw$direct$unadjusted\ntab_exp <- \"edu_m_0\"\ntab_coh <- \"ALSPAC\"\ntab_conf <- \"sex\"\n\n# This takes the output of a nested list of models and puts them into a table.\nbmiTab <- function(x, tab_exp, tab_coh, tab_conf){\n\nif(length(x) == 0 || is.na(x)){\n\nreturn(NULL)\n\n}\n\nout <- data.frame(matrix(NA, ncol = 10, \n                  nrow = length(attributes(x$coefficients)$names)))\ncolnames(out) <- c(\"outcome\", \"exposure\", \"predictor\", \"n\", \"adjusted\", \n                   \"direct\", \"estimate\", \"se\", \"cohort\", \"formula\")\nform <- toString(formula(x))\nout$outcome <- colnames(x$model)[1]\nout$exposure <- tab_exp\nout$predictor <- attributes(x$coefficients)$names\nout$n <- length(x$residuals)\nout$adjusted <- ifelse(grepl(tab_conf[1], form) == TRUE, \n                       \"adjusted\", \"unadjusted\")\nout$direct <- ifelse(\n    lengths(regmatches(form, gregexpr(\"bmi\", form))) == 1, \"total\", \"direct\")\nout$estimate <- x$coefficients\nout$se <- sqrt(diag(vcov(x)))\nout$cohort <- tab_coh\nout$formula <- form\n\nreturn(out)\n}\n\n\n################################################################################\n# 3. bmiPoc  \n################################################################################\n\n# This runs all of the required models, extracts the required information and\n# puts the output in a table\n\nbmiPoc <- function(exp, conf, coh){\n\nprint(exp)\n\nresults <- list()\n\nif(exp %in% colnames(bmi_wide) == FALSE ||\n   all(is.na(bmi_wide[exp])) == TRUE) {\n\n    stop(paste0(\"Error: variable \", \"'\", exp, \"'\", \"not found, aborting\"))\n   }\n\nbmi_type <- c(\"raw\", \"int_z\", \"age_z\")\n\n## ---- First age category -----------------------------------------------------\n\n# I could do this in endless for loops but it gets quite hard to read. What I'm\n# looping over here are the three different forms of BMI outcome.\n\n## ---- Age 0 - 2 --------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_0_2 ~ \", exp)\ntot_adj <- paste0(\"bmi_\", i, \"_0_2 ~ \", exp, \" + \", conf)\n\n## Total\nresults$age_0_2[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_0_2[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_0_2[[i]]$direct$unadjusted <- NA\nresults$age_0_2[[i]]$direct$adjusted <- NA\n}\n\n\n## ---- Ages 3 - 4 -------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exp)\ntot_adj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exp, \" + \", conf)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\")\ndir_adj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", conf)\n\n## Total\nresults$age_3_4[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_3_4[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_3_4[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_3_4[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 5 - 8 -------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exp)\ntot_adj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exp, \" + \", conf)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\")\ndir_adj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", conf)\n\n## Total\nresults$age_5_8[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_5_8[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_5_8[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_5_8[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 9 - 14 ------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exp)\ntot_adj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exp, \" + \", conf)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \"bmi_\", i, \"_5_8\")\n\n\ndir_adj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \n                    \" + \", \"bmi_\", i, \"_5_8\", \" + \", conf)\n\n## Total\nresults$age_9_14[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_9_14[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_9_14[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_9_14[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 15 - 18 -----------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exp)\ntot_adj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exp, \" + \", conf)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \"bmi_\", i, \"_5_8\", \n                    \" + \", \"bmi_\", i, \"_9_14\")\n\n\ndir_adj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exp, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \n                    \" + \", \"bmi_\", i, \"_5_8\", \" + \", \n                    \" + \", \"bmi_\", i, \"_9_14\", \" + \", conf)\n\n## Total\nresults$age_15_18[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_15_18[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_15_18[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_15_18[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\nout <- rlapply(results, function(x){\n          rlapply(x, function(x){\n              rlapply(x, function(x){\n                  rlapply(x, bmiTab, tab_exp = exp, tab_coh = coh, tab_conf = conf)})})})\n    \n\nreturn(out)\n\n}",
+			"file": "code/bmi-poc-draft-functions.R",
+			"file_size": 6683,
+			"file_write_time": 132168231727471458,
+			"settings":
+			{
+				"buffer_size": 6825,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/Z/projects/ieu2/p6/048/working/scripts/wp1/r/wp1-harmonisation-descriptives.R",
+			"settings":
+			{
+				"buffer_size": 10128,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "\n################################################################################\n# 7. Model definitions \n################################################################################\n\ntmp_1 <- vector(\"list\", 2)\nnames(tmp_1) <- c(\"unadjusted\", \"adjusted\")\n\ntmp_2 <- list(tmp_1, tmp_1)\nnames(tmp_2) <- c(\"total\", \"direct\")\n\ntmp_3 <- list(tmp_2, tmp_2, tmp_2)\nnames(tmp_3) <- c(\"raw\", \"internal_z\", \"bmi_age\")\n\nresults <- list(tmp_3, tmp_3, tmp_3, tmp_3, tmp_3)\nnames(results) <- c(\"age_0_2\", \"age_3_4\", \"age_5_8\", \"age_9_14\", \"age_15_18\")\n\nstr(results)\n\n\n################################################################################\n## Project: bmi-poc\n## Script purpose: Functions for analysis and tables\n## Date: 29th October 2019\n## Author: Tim Cadman\n## Email: t.cadman@bristol.ac.uk\n################################################################################\n\n################################################################################\n# 1. lmWrap\n################################################################################\n\n## This is just a wrapper to neaten up the lm code by specifying the data\n\nlmWrap <- function(formula){\n\nlm(formula, data = bmi_wide)    \n}\n\n\n################################################################################\n# 2. rlapply  \n################################################################################\n\n## A wrapper for lapply which rbinds the output\nrlapply <- function(...){\n\ndo.call(rbind, lapply(...))\n\n}\n\n\n################################################################################\n# 3. bmiPoc  \n################################################################################\n\n# This runs all of the required models, extracts the required information and\n# puts the output in a table\n\nexposure <- \"edu_m_0\"\nconfounders <- confounders$edu_m_0\n\n\nbmiPoc <- function(exposure, confounders, cohort = cohort){\n\nbmi_type <- c(\"raw\", \"int_z\", \"age_z\")\n\n## ---- First age category -----------------------------------------------------\n\n# I could do this in endless for loops but it gets quite hard to read. What I'm\n# looping over here are the three different forms of BMI outcome.\n\n## ---- Age 0 - 2 --------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_0_2 ~ \", exposure)\ntot_adj <- paste0(\"bmi_\", i, \"_0_2 ~ \", exposure, \" + \", confounders)\n\n## Total\nresults$age_0_2[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_0_2[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_0_2[[i]]$direct$unadjusted <- NA\nresults$age_0_2[[i]]$direct$adjusted <- NA\n}\n\n\n## ---- Ages 3 - 4 -------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exposure)\ntot_adj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exposure, \" + \", confounders)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\")\ndir_adj <- paste0(\"bmi_\", i, \"_3_4 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", confounders)\n\n## Total\nresults$age_3_4[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_3_4[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_3_4[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_3_4[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 5 - 8 -------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exposure)\ntot_adj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exposure, \" + \", confounders)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\")\ndir_adj <- paste0(\"bmi_\", i, \"_5_8 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", confounders)\n\n## Total\nresults$age_5_8[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_5_8[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_5_8[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_5_8[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 9 - 14 ------------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exposure)\ntot_adj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exposure, \" + \", confounders)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \"bmi_\", i, \"_5_8\")\n\n\ndir_adj <- paste0(\"bmi_\", i, \"_9_14 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \n                    \" + \", \"bmi_\", i, \"_5_8\", \" + \", confounders)\n\n## Total\nresults$age_9_14[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_9_14[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_9_14[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_9_14[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n\n## ---- Ages 15 - 18 -----------------------------------------------------------\nfor(i in bmi_type){\n\ntot_unadj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exposure)\ntot_adj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exposure, \" + \", confounders)\n\ndir_unadj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \"bmi_\", i, \"_5_8\", \n                    \" + \", \"bmi_\", i, \"_9_14\")\n\n\ndir_adj <- paste0(\"bmi_\", i, \"_15_18 ~ \", exposure, \" + \", \"bmi_\", i, \"_0_2\", \n                    \" + \", \"bmi_\", i, \"_3_4\", \" + \", \n                    \" + \", \"bmi_\", i, \"_5_8\", \" + \", \n                    \" + \", \"bmi_\", i, \"_9_14\", \" + \", confounders)\n\n## Total\nresults$age_15_18[[i]]$total$unadjusted <- lmWrap(formula = tot_unadj)\n\nresults$age_15_18[[i]]$total$adjusted <- lmWrap(formula = tot_adj)\n\n## Direct\nresults$age_15_18[[i]]$direct$unadjusted <- lmWrap(formula = dir_unadj)\nresults$age_15_18[[i]]$direct$adjusted <- lmWrap(formula = dir_adj)\n}\n\n# This takes the output of a nested list of models and puts them into a table.\nbmiTab <- function(x, exposure, cohort){\n\nif(length(x) == 0 || is.na(x)){\n\nreturn(NULL)\n\n}\n\nout <- data.frame(matrix(NA, ncol = 9, \n                  nrow = length(attributes(x$coefficients)$names)))\n\ncolnames(out) <- c(\"outcome\", \"predictor\", \"n\", \"adjusted\", \"direct\", \"estimate\",\n                 \"se\", \"cohort\", \"formula\")\n\nform <- toString(formula(x))\n\nout$outcome <- colnames(x$model)[1]\nout$exposure <- exposure\nout$predictor <- attributes(x$coefficients)$names\nout$n <- length(x$residuals)\nout$adjusted <- ifelse(\n    any(confounders %in% attributes(x$coefficients)$names) == TRUE,\n    \"adjusted\", \"unadjusted\")\nout$direct <- ifelse(\n    lengths(regmatches(form, gregexpr(\"bmi\", form))) == 1, \"total\", \"direct\")\nout$estimate <- x$coefficients\nout$se <- sqrt(diag(vcov(x)))\nout$cohort <- cohort\nout$formula <- form\n\nreturn(out)\n}\n\nout <- rlapply(results, function(x){\n          rlapply(x, function(x){\n             rlapply(x, function(x){\n                 rlapply(x, bmiTab, exposure = exposure, cohort = cohort)})})})\n    \n\nreturn(out)\n\n}",
+			"settings":
+			{
+				"buffer_size": 7122,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/Z/projects/ieu2/p6/048/working/scripts/common/functions/wp1-harmonisation-functions.R",
+			"settings":
+			{
+				"buffer_size": 11391,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"r-ide",
+				"Preferences: R-IDE Settings"
+			],
+			[
+				"send",
+				"SendCode: Choose Program"
+			],
+			[
+				"Snippet: ",
+				"Snippet: kable_extra"
+			],
+			[
+				"lintr",
+				"LSP: Disable Language Server in Project"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Remove Package"
+			],
+			[
+				"lan",
+				"LSP: Setup Language Server"
+			],
+			[
+				"lsp",
+				"LSP: Enable Language Server Globally"
+			],
+			[
+				"r-",
+				"Preferences: R-IDE Settings"
+			],
+			[
+				"re",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"rbos",
+				"R-Box: Format Selected Code"
+			],
+			[
+				"sen",
+				"SendCode: Choose Program"
+			],
+			[
+				"ter",
+				"Terminus: Open Default Shell in View"
+			],
+			[
+				"term",
+				"Terminus: Open Default Shell in View"
+			],
+			[
+				"termin",
+				"Terminus: Open Default Shell in View"
+			],
+			[
+				"package",
+				"Package Control: Remove Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 157.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/tc18889/OneDrive - University of Bristol/repos/bmi-poc",
+		"/C/Users/tc18889/OneDrive - University of Bristol/repos/bmi-poc/code",
+		"/C/Users/tc18889/OneDrive - University of Bristol/repos/useful-code-r"
+	],
+	"file_history":
+	[
+		"/C/Users/tc18889/OneDrive - University of Bristol/repos/school-enjoyment-mh/code/r/semh-manuscript-impute.R",
+		"/C/Users/tc18889/OneDrive - University of Bristol/repos/school-enjoyment-mh/code/r/semh-manuscript-impute-bc.R",
+		"/C/repos/useful-code-r/code/useful-code-r-packages.r",
+		"/C/repos/mh-ineq/code/mh-ineq-draft-functions.R",
+		"/C/repos/teen-parenting/code/r/tpf-manuscript-getvars.R",
+		"/C/repos/teen-parenting/code/r/tpf-manuscript-impute.R",
+		"/C/Users/tc18889/AppData/Local/Microsoft/Windows/INetCache/Content.Outlook/XL98CMLA/assigning data.R",
+		"/C/repos/lc-tutorial/analysis-protocols/R/login.R",
+		"/C/repos/school-enjoyment-mh/code/r/semh-manuscript-analysis.R",
+		"/C/repos/lc-tutorial/analysis-protocols/R/sample_analysis/ALSPAC/ahmed_demo_analysis.R",
+		"/C/Old files/life-cycle/wp3/code/wp3-income.r",
+		"/C/repos/lc-tutorial/analysis-protocols/R/utils.R",
+		"/C/repos/lc-tutorial/analysis-protocols/R/populateCore.R",
+		"/O/repos/useful-code-r/code/functions/lav-tab-fit.r",
+		"/O/repos/useful-code-r/code/functions/descImp.r",
+		"/O/repos/useful-code-r/code/functions/lrTab.R",
+		"/C/Users/tc18889/AppData/Local/Temp/scp24554/newhome/tc18889/repos/teen-parenting/impute.R",
+		"/O/repos/useful-code-r/code/functions/combImp.r",
+		"/O/repos/useful-code-r/code/useful-code-r-packages.r",
+		"/O/repos/parent-personality-sep/code/r/ppsep-manuscript-analysis.R",
+		"/O/repos/school-enjoyment-mh/code/r/semh-manuscript-analysis.R",
+		"/O/repos/teen-parenting/code/r/tpf-manuscript-analysis.r",
+		"/O/repos/teen-parenting/code/r/tpf-manuscript-analysis-imputed.r",
+		"/O/repos/school-enjoyment-mh/code/r/semh-manuscript-tables-23_09_19.R",
+		"/O/repos/teen-parenting/code/old/tpf-analysis-yng.r",
+		"/C/Users/tc18889/AppData/Local/Temp/scp00585/newhome/tc18889/impute.Rout",
+		"/C/Users/tc18889/AppData/Local/Temp/scp00810/newhome/tc18889/repos/teen-parenting/tpf_impute_out.txt",
+		"/C/Users/tc18889/AppData/Local/Temp/scp58777/newhome/tc18889/repos/teen-parenting/impute.R",
+		"/O/repos/teen-parenting/code/r/tpf-manuscript-impute.R",
+		"/C/Users/tc18889/AppData/Local/Temp/scp17435/newhome/tc18889/repos/teen-parenting/impute.R",
+		"/R/Data/Useful_data/Denver/calculating denver - use.SPS",
+		"/C/Users/tc18889/AppData/Local/Temp/scp37232/newhome/tc18889/semh-manuscript-impute.Rout",
+		"/C/Users/tc18889/Google Drive/Research projects/Josh project/Final chapter/SEM R files/Josh SEM.R",
+		"/C/Users/tc18889/Google Drive/Research projects/Josh project/Final chapter/SEM josh syntax.R",
+		"/O/repos/school-enjoyment-mh/code/r/semh-analysis-manuscript.R",
+		"/O/repos/parent-personality-sep/code/r/ppsep-analysis-lr.R",
+		"/O/repos/teen-parenting/code/r/things to do",
+		"/O/repos/teen-parenting/code/r/tpf-getvars-manuscript.R",
+		"/O/repos/teen-parenting/code/r/tpf-manuscript-tables.r",
+		"/C/Users/tc18889/AppData/Local/Temp/scp05953/newhome/tc18889/repos/teen-parenting/tpf_impute.sh",
+		"/C/Users/tc18889/AppData/Local/Temp/scp50781/newhome/tc18889/repos/teen-parenting/impute.R",
+		"/O/repos/parent-personality-sep/code/r/ppsep-source-impute-matpat.R",
+		"/O/repos/parent-personality-sep/code/r/ppsep-source-getvars.R",
+		"/O/repos/parent-personality-sep/code/r/ppsep-manuscript-plots.R",
+		"/O/repos/school-enjoyment-mh/code/r/semh-analysis-tables.R",
+		"/O/repos/school-enjoyment-mh/code/r/semh-analysis-separate.R",
+		"/O/repos/useful-code-r/code/functions/combStdEst.R",
+		"/O/repos/school-enjoyment-mh/code/old/semh-shell-impute.sh",
+		"/O/repos/teen-parenting/code/tpf-analysis.sh",
+		"/O/repos/teen-parenting/code/tpf-shell-impute.sh",
+		"/O/repos/life-cycle/wp1/code/wp1-harmonisation-QC.R",
+		"/C/Users/tc18889/AppData/Local/Microsoft/Windows/INetCache/Content.Outlook/UNQOF545/DataSHIELD_analysis_demo_ae.R",
+		"/O/repos/parent-personality-sep/code/r/ppsep-manuscript-getvars.R",
+		"/O/repos/parent-personality-sep/code/ppsep-source-impute.R",
+		"/O/repos/teen-parenting/code/rmd/tpf-report-13_05_19.rmd",
+		"/O/repos/useful-code-r/code/derived/useful-code-r-derived-child-mh.R",
+		"/O/repos/teen-parenting/code/tpf-report-17_06_19.rmd",
+		"/O/repos/teen-parenting/code/tpf-source-yng.R",
+		"/O/repos/teen-parenting/code/tpf-analysis-manuscript.r",
+		"/C/Old files/Active projects/Teen parenting factor paper/Teen parenting variables.do",
+		"/O/repos/useful-code-r/code/functions/corStars.r",
+		"/O/repos/parent-personality-sep/code/ppsep-analysis-lr.do",
+		"/O/repos/teen-parenting/code/tpf-analysis-yng.r",
+		"/O/repos/school-enjoyment-mh/code/semh-analysis-manuscript.R",
+		"/O/repos/useful-code-r/code/derived/useful-code-r-derived-mat-epds.R",
+		"/O/repos/useful-code-r/code/derived/useful-code-r-derived-child-cov.R",
+		"/O/repos/useful-code-r/code/derived/useful-code-r-derived-mat-cov.r",
+		"/O/repos/useful-code-stata/code/useful-code-stata-childMH.do",
+		"/O/repos/lc-trajectories-inequality/code/lc-traj-ineq-analysis-plan-v1.rmd",
+		"/O/repos/teen-parenting/code/tpf-report-13_05_19.rmd",
+		"/O/repos/useful-code-r/code/reports/khl_3.tex",
+		"/O/repos/useful-code-r/code/reports/khl_4.tex",
+		"/O/repos/useful-code-r/code/reports/report-colours.doc",
+		"/O/Admin/Meeting notes/debbie meeting 24.04.19.txt",
+		"/O/repos/parent-personality-sep/code/ppsep-analysis-lr.R",
+		"/O/repos/teen-parenting/code/tpf_report-24_04_19.rmd",
+		"/O/repos/useful-code-r/code/functions/lav-tab-par.R",
+		"/O/repos/teen-parenting/code/tpf-source.R",
+		"/O/repos/teen-parenting/code/tpf-analysis-meth.r",
+		"/O/Will ASC IRT/Mplus analyses with Hein/females_for_CFA.inp",
+		"/O/Will ASC IRT/Mplus analyses with Hein/split1_for_CFA.inp",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/yaml.sublime-snippet",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/kable_extra.sublime-snippet",
+		"/O/repos/teen-parenting/code/tpf-report-10_04_19.rmd",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/kable.sublime-snippet",
+		"/O/repos/school-enjoyment-mh/reports/semh-analysis-xl-report.tex",
+		"/C/Program Files/R/R-3.5.3/etc/Rprofile.site",
+		"/C/repos/useful-code-r/code/reports/khl_3.tex",
+		"/C/repos/life-cycle/wp3/code/alspac_missing_02_04_19.Rmd",
+		"/C/repos/life-cycle/wp3/code/wp3-constanza_04.03.19.rmd",
+		"/C/repos/school-enjoyment-mh/code/semh-analysis-xl.R",
+		"/C/repos/school-enjoyment-mh/code/semh-analysis-xl-report.Rmd",
+		"/C/repos/useful-code-r/code/useful-code-r-render.r",
+		"/C/repos/life-cycle/wp3/code/wp3-constanza_04.03.19.r",
+		"/C/repos/parent-personality-sep/code/ppsep-source-impute.R",
+		"/C/repos/parent-personality-sep/code/ppsep-analysis-lr.do",
+		"/C/repos/life-cycle/wp1/code/wp1-harmonisation.r",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/varlist.sublime-snippet",
+		"/C/repos/teen-parenting/code/tpf-source.R",
+		"/C/repos/school-enjoyment-mh/code/semh-source.r",
+		"/C/repos/gosh-asc-sex/code/gosh-asc-sex-missing.rmd",
+		"/C/repos/useful-code-r/code/functions/match-lab.R",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/yaml.sublime-snipped",
+		"/C/repos/useful-code-r/code/functions/create-mod.r",
+		"/C/repos/useful-code-r/code/functions/simpMedPlot.R",
+		"/C/repos/school-enjoyment-mh/code/sdq_outtakes.rmd",
+		"/C/repos/school-enjoyment-mh/code/semh-plots-sem.r",
+		"/C/repos/useful-code-r/code/functions/lavSigCoef.R",
+		"/C/repos/school-enjoyment-mh/code/semh-source-linked.R",
+		"/C/repos/useful-code-r/code/derived/useful-code-r-derived-child-mh.R",
+		"/C/repos/useful-code-r/code/functions/titleN.r",
+		"/C/repos/useful-code-r/code/functions/lavNobs.r",
+		"/C/repos/useful-code-r/code/themes/useful-code-r-ggtheme-khl.R",
+		"/C/repos/stats-learning/reports/test_29_03_19.rmd",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/rmd_2_tab.sublime-snippet",
+		"/C/repos/useful-code-r/code/themes/addFonts.r",
+		"/C/repos/useful-code-r/code/functions/getNodes.R",
+		"/C/repos/useful-code-r/code/functions/lav-tab-struc.r",
+		"/C/repos/useful-code-r/code/reports/to do",
+		"/C/repos/useful-code-r/code/functions/sigStars.r",
+		"/C/repos/useful-code-r/code/functions/lavaanPlotMod.R",
+		"/C/repos/life-cycle/wp1/code/wp1-docs-child.rmd",
+		"/C/repos/parent-personality-sep/code/ppsep-plots.R",
+		"/C/Users/tc18889/AppData/Roaming/Sublime Text 3/Packages/User/r-header-1.sublime-snippet",
+		"/C/Program Files/R/R-3.5.2/etc/Rprofile.site",
+		"/C/repos/lc-trajectories-inequality/code/lc-traj-ineq-plan.rmd",
+		"/C/repos/useful-code-r/code/reports/report-design.rmd",
+		"/C/repos/useful-code-r/code/functions/ggsem.R"
+	],
+	"find":
+	{
+		"height": 29.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"cohort",
+			"confounders",
+			"exposure",
+			"age_z",
+			"bmi_age_z",
+			"bmi_age",
+			"int_z",
+			"raw",
+			"[[i]]",
+			"confounders_edu",
+			"testy",
+			"9_14",
+			"5_8",
+			"0_2",
+			"-"
+		],
+		"highlight": true,
+		"in_selection": true,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"coh",
+			"conf",
+			"exp",
+			"int_z",
+			"raw",
+			"age_z",
+			"bmi_age_z",
+			"bmi_age",
+			"int_z",
+			"$raw",
+			"\"raw\"",
+			"confounders",
+			"x",
+			"15_18",
+			"9_14",
+			"3_4",
+			"_",
+			"h"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 4,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "code/bmi-poc-draft-analysis.r",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11807,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5424,
+								5447
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								2760.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2760.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "test.csv",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 298,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								298,
+								298
+							]
+						],
+						"settings":
+						{
+							"auto_name": "\"\",\"genr.class\",\"genr.length\",\"genr.categories\",\"g",
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "code/test_ds.R",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7339,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3172,
+								3100
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/C/Users/tc18889/OneDrive - University of Bristol/repos/useful-code-r/code/useful-code-r-packages.r",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 3370,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								1680.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1680.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "code/bmi-poc-draft-functions.R",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6825,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1280,
+								2124
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								3500.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3500.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/Z/projects/ieu2/p6/048/working/scripts/wp1/r/wp1-harmonisation-descriptives.R",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10128,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								2700.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2700.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7122,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7122,
+								7122
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								3579.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3579.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/Z/projects/ieu2/p6/048/working/scripts/common/functions/wp1-harmonisation-functions.R",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11391,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								3000.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/R/R.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3000.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.diagnostics":
+	{
+		"height": 186.0
+	},
+	"output.exec":
+	{
+		"height": 126.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "bmi-poc.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 320.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
