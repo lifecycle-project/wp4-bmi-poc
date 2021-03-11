@@ -14,12 +14,12 @@ library(dplyr)
 library(magrittr)
 library(tidyr)
 library(stringr)
-library(remotes)
-install_github("lifecycle-project/ds-helper", ref = "maintenance")
+#library(remotes)
+#install_github("lifecycle-project/ds-helper", ref = "maintenance")
 library(dsHelper)
 
 #datashield.workspaces(opals)
-ls("package:dsBaseClient")
+#ls("package:dsBaseClient")
 ################################################################################
 # 1. Assign additional opal tables  
 ################################################################################
@@ -104,7 +104,7 @@ cohorts_tables <- bind_rows(
     table = c(
       "lc_sws_core_2_1.2_1_core_1_1_non_rep", 
       "lc_sws_core_2_1.2_1_core_1_1_monthly_rep", 
-      "lc_sws_outcome_1_1.1_1_outcome_1_1_yearly_rep")), 
+      "lc_sws_core_2_1.2_1_core_1_1_yearly_rep")), 
   tibble(
     cohort = "nfbc86",
     table = c(
@@ -128,6 +128,8 @@ cohorts_tables %>%
 datashield.workspace_save(conns, "bmi_poc_sec_1")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_1")
 
+ds.summary("yearrep")
+
 ################################################################################
 # 2. Check available data  
 ################################################################################
@@ -135,8 +137,7 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_1")
 ## ---- Non-repeated -----------------------------------------------------------
 non_class <- dh.classDiscrepancy(
   df = "nonrep", 
-  vars = nonrep.vars, 
-  conns = conns)
+  vars = nonrep.vars)
 
 non_class %>% filter(discrepancy == "yes")
 

@@ -17,6 +17,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(ggplot2)
+library(dsHelper)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
@@ -511,36 +512,62 @@ write.csv(ipd_remove_ns.tab)
 
 
 ################################################################################
-# OLD ANALYSES
+# PRESENTATIONS
 ################################################################################
-################################################################################
-# October 2020 GA sample size visualisation  
-################################################################################
-cohort_neat <- c("CHOP", "DNBC", "GECKO", "Gen-R", "INMA", "MoBa", "NINFEA", 
-                 "Raine", "Combined")
 
-test <- descriptives_ss$continuous %>%
-  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
-                         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
-                         "age_months.168", "age_months.215")) 
-  
-testy <- test %>% 
-  separate(variable, c("var", "age"), sep = "([.])") %>% print(n = 90) %>%
-  filter(var == "age_months") %>%
+################################################################################
+# Prepare dataframe  
+################################################################################
+cohort_neat <- c("CHOP", "DNBC", "ELFE", "GECKO", "Gen-R", "INMA", "MoBa", 
+                 "NFBC86", "NINFEA", "Raine", "SWS", "Combined")
+
+plot_data_cont <- descriptives$continuous %>% 
   mutate(
     cohort = case_when(
       cohort == "chop" ~ "CHOP",
       cohort == "dnbc" ~ "DNBC",
+      cohort == "elfe" ~ "ELFE",
       cohort == "gecko" ~ "GECKO",
       cohort == "genr" ~ "Gen-R", 
       cohort == "inma" ~ "INMA", 
       cohort == "moba" ~ "MoBa", 
+      cohort == "nfbc86" ~ "NFBC86", 
       cohort == "ninfea" ~ "NINFEA",
       cohort == "raine" ~ "Raine",
-      cohort == "Combined" ~ "Combined"), 
+      cohort == "sws" ~ "SWS",
+      cohort == "combined" ~ "Combined"), 
     cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
 
-sample.plot <- ggplot(data = testy, aes(x = perc_50, y = cohort, size = valid_n, colour = cohort)) +
+plot_data_cat <- descriptives$categorical %>% 
+  mutate(
+    cohort = case_when(
+      cohort == "chop" ~ "CHOP",
+      cohort == "dnbc" ~ "DNBC",
+      cohort == "elfe" ~ "ELFE",
+      cohort == "gecko" ~ "GECKO",
+      cohort == "genr" ~ "Gen-R", 
+      cohort == "inma" ~ "INMA", 
+      cohort == "moba" ~ "MoBa", 
+      cohort == "nfbc86" ~ "NFBC86", 
+      cohort == "ninfea" ~ "NINFEA",
+      cohort == "raine" ~ "Raine",
+      cohort == "sws" ~ "SWS",
+      cohort == "combined" ~ "Combined"), 
+    cohort = factor(cohort, levels = rev(cohort_neat), ordered = TRUE))
+
+################################################################################
+# Sample size visualisation  
+################################################################################
+sample_data <- plot_data_cont %>%
+  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
+                         "bmi.6544", "age_months.24", "age_months.48", "age_months.96", 
+                         "age_months.168", "age_months.215")) %>%
+  separate(variable, c("var", "age"), sep = "([.])") %>% print(n = 90) %>%
+  filter(var == "age_months") 
+  
+palette_samp <- c("#ff2600", rep("#005690", 11))
+
+sample.plot <- ggplot(data = sample_data, aes(x = perc_50, y = cohort, size = valid_n, colour = cohort)) +
 geom_point() + 
   geom_vline(xintercept = 0, linetype=2, size = 0.3) +
   geom_vline(xintercept = 24, linetype=2, size = 0.3) +
@@ -554,15 +581,409 @@ geom_point() +
   theme(panel.grid.major.x = element_line(colour="white"),
         panel.grid.minor.x =element_line(colour="white"),
         axis.ticks.x = element_line(colour = "grey"), 
-        legend.position = "top") +
+        legend.position = "none", 
+        legend.title = element_blank(), 
+        legend.justification='left') +
   scale_x_continuous(
     limits = c(0, 215), 
     breaks = c(0, 24, 48, 96, 168, 215), 
     expand = c(0.01, 0)) +
-  scale_colour_manual(values = palette_n)
+  scale_colour_manual(values = palette_samp, guide = FALSE) 
 
 ggsave(
-  filename="./figures/sample_size.png", 
+  filename = "~/wp4-bmi-poc/figures/sample_n_mar21.png", 
   plot = sample.plot, 
-  dpi=300, 
+  dpi = 1200, 
+  h = 12,
+  w = 20,
+  units = "cm",
   device="png")
+
+################################################################################
+# Exposures  
+################################################################################
+coolors <- c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#9e7682", 
+             "#aba9c3", "#8b2635", "#ec9192", "#553739")
+
+## ---- NDVI -------------------------------------------------------------------
+ndvi_plotdata <- plot_data_cont %>%
+  filter(variable == "ndvi" & !is.na(mean) & cohort != "Combined")
+
+ndvi.plot <- ndvi_plotdata %>%
+  ggplot(aes(x = variable, y = mean, fill = cohort)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort, ncol = 3) +
+  theme_traj +
+  labs(x = "", y = "", title = "") +
+  theme(legend.position = "none", 
+        axis.text.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(colour="grey"), 
+        axis.ticks.length = unit(0, "cm")) +
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(
+    limits = c(0, 1), 
+    breaks = seq(0, 1, 0.2),
+    expand = c(0, 0)) +
+  scale_fill_manual(values = coolors)
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/ndvi.png", 
+  plot = ndvi.plot,
+  h = 5, w = 10, units="cm", dpi=1200,
+  device="png")
+
+
+## ---- Area deprivation -------------------------------------------------------
+area_plotdata <- plot_data_cat %>%
+  filter(variable == "area_dep" & !is.na(valid_perc) & cohort != "Combined")
+
+area.plot <- area_plotdata %>%
+  ggplot(aes(x = category, y = valid_perc, fill = cohort)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort, ncol = 5) +
+  theme_traj +
+  xlab("") +
+  ylab("") +
+  theme(legend.position = "none", 
+        panel.grid.major.x = element_blank(), 
+        panel.grid.major.y = element_line(colour="grey")) +
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(limits = c(0, 60), breaks = seq(0, 60, 10), expand = c(0, 0)) +
+  scale_fill_manual(values = coolors)
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/area.png", 
+  plot = area.plot,
+  h = 5, w = 10, units="cm", dpi=1200,
+  device="png")
+
+## ---- Maternal education -----------------------------------------------------
+mated_plotdata <- plot_data_cat %>%
+  filter(variable == "edu_m" & !is.na(mean) & cohort != "Combined" & cohort != "SWS")
+
+mated.plot <- mated_plotdata %>%
+  ggplot(aes(x = category, y = valid_perc, fill = cohort)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort, ncol = 5) +
+  theme_traj +
+  xlab("") +
+  ylab("") +
+  theme(legend.position = "none", 
+        panel.grid.major.x = element_blank(), 
+        panel.grid.major.y = element_line(colour="grey")) +
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_manual(values = coolors)
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/mated.png", 
+  plot = mated.plot,
+  h = 10, w = 20, units="cm", dpi=1200,
+  device="png")
+
+## ---- Gestational diabetes ---------------------------------------------------
+pregdia_plotdata <- plot_data_cat %>%
+  filter(variable == "preg_dia" & valid_n > 0 & cohort != "Combined" & category == 1)
+
+pregdia.plot <- pregdia_plotdata %>%
+  ggplot(aes(x = variable, y = valid_perc, fill = cohort)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort, ncol = 9) +
+  theme_traj +
+  xlab("") +
+  ylab("") +
+  theme(legend.position = "none", 
+        axis.text.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(colour="grey"),
+        axis.ticks.length = unit(0, "cm")) +
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(
+    limits = c(0, 16),
+    breaks = seq(0, 16, 2),
+    expand = c(0, 0)) +
+  scale_fill_manual(values = coolors)
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/pregdia.png", 
+  plot = pregdia.plot,
+  h = 5, w = 20, units="cm", dpi=1200,
+  device="png")
+
+################################################################################
+# Forest plots with SLMA and IPD combined  
+################################################################################
+################################################################################
+# Maternal education  
+################################################################################
+age_orig <- c("bmi_24", "bmi_48", "bmi_96", "bmi_168", "bmi_215")
+age_new <- c("0-24 months", "25-48 months", "49-96 months", "97-168 months", 
+             "169-215 months")
+  
+## ---- Prepare data -----------------------------------------------------------
+mat_ed_ipd <- mat_ed.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd", format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable %in% c("edu_m2", "edu_m3")) %>%
+  mutate(
+    type = "IPD", 
+    cohort = "combined", 
+    exposure = "mat_ed") %>%
+  dplyr::rename(
+    beta = est,
+    ci_5 = lower,
+    ci_95 = upper)
+
+mat_ed_slma <- mat_ed.pdata %>% mutate(type = "SLMA")
+
+mat_ed_comb <- bind_rows(mat_ed_ipd, mat_ed_slma) %>% select(-se)
+
+mat_ed_comb.pdata <- mat_ed_comb %>% 
+  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3") & cohort == "combined") %>%
+  mutate(  
+    variable = case_when(
+      variable == "edu_m2" ~ "Medium education (ref = high)", 
+      variable == "edu_m3" ~ "Low education (ref = high)"),
+    variable = factor(
+      variable, 
+      levels = c("Medium education (ref = high)", 
+                 "Low education (ref = high)"),
+      ordered = TRUE), 
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new),
+      ordered = TRUE)
+  )
+
+
+## ---- Plot -------------------------------------------------------------------
+mat_ed_comb.plot <- ggplot(data = mat_ed_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_point(
+    aes(colour = type), size = 1.5, 
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_errorbar(
+    aes(colour = type),
+      size = 0.3, 
+      width = 0.1,
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
+  xlab('Child age') + 
+  ylab("Difference in childhood BMI by category of maternal education") +
+  labs(colour = "Type") +
+  facet_wrap(~variable, scales = "fixed", strip.position = "top") + 
+  forest_theme +
+  coord_flip() +
+  scale_colour_manual(values = palette_n) +
+  theme(legend.title = element_blank()) + 
+  scale_y_continuous(
+    limits = c(-1, 2),
+    breaks = seq(-1, 2, 1),
+    expand = c(0, 0)) 
+
+
+################################################################################
+# NDVI  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
+ndvi_ipd <- ndvi.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd", format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable == "ndvi") %>%
+  mutate(
+    type = "IPD", 
+    cohort = "combined", 
+    exposure = "ndvi") %>%
+  dplyr::rename(
+    beta = est,
+    ci_5 = lower,
+    ci_95 = upper)
+
+ndvi_slma <- ndvi.pdata %>% mutate(type = "SLMA")
+
+ndvi_comb <- bind_rows(ndvi_ipd, ndvi_slma) %>% select(-se)
+
+ndvi_comb.pdata <- ndvi_comb %>% 
+  filter(exposure == "ndvi" & variable == "ndvi" & cohort == "combined") %>%
+  mutate(  
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new), 
+      ordered = TRUE),
+    variable = "NDVI"
+  )
+
+## ---- Plot -------------------------------------------------------------------
+ndvi_comb.plot <- ggplot(data = ndvi_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_point(
+    aes(colour = type), size = 1.5, 
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_errorbar(
+    aes(colour = type),
+    size = 0.3, 
+    width = 0.1,
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
+  xlab('Child age') + 
+  ylab("Difference in childhood BMI by unit change in NDVI") +
+  labs(colour = "Type") +
+  forest_theme +
+  coord_flip() +
+  scale_colour_manual(values = palette_n) +
+  theme(legend.title = element_blank()) + 
+  scale_y_continuous(
+    limits = c(-1, 2),
+    breaks = seq(-1, 2, 1),
+    expand = c(0, 0)) 
+
+
+################################################################################
+# Area deprivation  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
+area_ipd <- area_dep.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd", format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable %in% c("area_dep2", "area_dep3")) %>%
+  mutate(
+    type = "IPD", 
+    cohort = "combined", 
+    exposure = "area_dep") %>%
+  dplyr::rename(
+    beta = est,
+    ci_5 = lower,
+    ci_95 = upper)
+
+area_slma <- area_dep.pdata %>% mutate(type = "SLMA")
+
+area_comb <- bind_rows(area_ipd, area_slma) %>% select(-se)
+
+area_comb.pdata <- area_comb %>% 
+  filter(exposure == "area_dep" & variable %in% c("area_dep2", "area_dep3") & cohort == "combined") %>%
+  mutate(  
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new), 
+      ordered = TRUE), 
+    variable = case_when(
+      variable == "area_dep2" ~ "Medium area deprivation (ref = low)", 
+      variable == "area_dep3" ~ "High area deprivation (ref = low)"),
+    variable = factor(
+      variable, 
+      levels = c("Medium area deprivation (ref = low)", 
+                 "High area deprivation (ref = low)"),
+        ordered = TRUE))
+
+## ---- Plot -------------------------------------------------------------------
+area_comb.plot <- ggplot(data = area_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_point(
+    aes(colour = type), size = 1.5, 
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_errorbar(
+    aes(colour = type),
+    size = 0.3, 
+    width = 0.1,
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
+  xlab('Child age') + 
+  ylab("Difference in childhood BMI by category of area deprivation") +
+  labs(colour = "Type") +
+  facet_wrap(~variable, scales = "fixed", strip.position = "top") + 
+  forest_theme +
+  coord_flip() +
+  scale_colour_manual(values = palette_n) +
+  theme(legend.title = element_blank()) + 
+  scale_y_continuous(
+    limits = c(-1, 2),
+    breaks = seq(-1, 2, 1),
+    expand = c(0, 0)) 
+
+################################################################################
+# Gestational diabetes  
+################################################################################
+
+## ---- Prepare data -----------------------------------------------------------
+dia_ipd <- preg_dia.fit[[1]] %>%
+  map(dh.glmTab, type = "ipd", format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable == "preg_dia1") %>%
+  mutate(
+    type = "IPD", 
+    cohort = "combined", 
+    exposure = "preg_dia") %>%
+  dplyr::rename(
+    beta = est,
+    ci_5 = lower,
+    ci_95 = upper)
+
+dia_slma <- preg_dia.pdata %>% mutate(type = "SLMA")
+
+dia_comb <- bind_rows(dia_ipd, dia_slma) %>% select(-se)
+
+dia_comb.pdata <- dia_comb %>% 
+  filter(exposure == "preg_dia" & variable == "preg_dia1" & cohort == "combined") %>%
+  mutate(  
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new), 
+      ordered = TRUE), 
+    variable = "Presence of gestational diabetes"
+  )
+
+## ---- Plot -------------------------------------------------------------------
+dia_comb.plot <- ggplot(data = dia_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_point(
+    aes(colour = type), size = 1.5, 
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_errorbar(
+    aes(colour = type),
+    size = 0.3, 
+    width = 0.1,
+    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
+  xlab('Child age') + 
+  ylab("Difference in chilhood BMI where gestational diabetes present") +
+  labs(colour = "Type") +
+  forest_theme +
+  coord_flip() +
+  scale_colour_manual(values = palette_n) +
+  theme(legend.title = element_blank()) + 
+  scale_y_continuous(
+    limits = c(-1, 2),
+    breaks = seq(-1, 2, 1),
+    expand = c(0, 0)) 
+
+################################################################################
+# Save plots  
+################################################################################
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/mat_ed_comb.png", 
+  plot = mat_ed_comb.plot,
+  h = 12, w = 16, units="cm", dpi=1200,
+  device="png")
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/ndvi_comb.png", 
+  plot = ndvi_comb.plot,
+  h = 12, w = 16, units="cm", dpi=1200,
+  device="png")
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/area_comb.png", 
+  plot = area_comb.plot,
+  h = 12, w = 16, units="cm", dpi=1200,
+  device="png")
+
+ggsave(
+  filename = "~/wp4-bmi-poc/figures/dia_comb.png", 
+  plot = dia.plot,
+  h = 12, w = 16, units="cm", dpi=1200,
+  device="png")
+
+
