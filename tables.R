@@ -619,18 +619,19 @@ ndvi.plot <- ndvi_plotdata %>%
         axis.text.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_line(colour="grey"), 
-        axis.ticks.length = unit(0, "cm")) +
+        axis.ticks.length = unit(0, "cm"), 
+        plot.margin=unit(c(-0.3, 0.5, 0, -0.3),"cm")) +
   scale_x_discrete(expand = c(0, 0)) + 
   scale_y_continuous(
     limits = c(0, 1), 
-    breaks = seq(0, 1, 0.2),
+    breaks = seq(0, 1, 0.5),
     expand = c(0, 0)) +
   scale_fill_manual(values = coolors)
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/ndvi.png", 
   plot = ndvi.plot,
-  h = 5, w = 10, units="cm", dpi=1200,
+  h = 4, w = 10, units="cm", dpi=1200,
   device="png")
 
 
@@ -647,15 +648,16 @@ area.plot <- area_plotdata %>%
   ylab("") +
   theme(legend.position = "none", 
         panel.grid.major.x = element_blank(), 
-        panel.grid.major.y = element_line(colour="grey")) +
+        panel.grid.major.y = element_line(colour="grey"),        
+        plot.margin=unit(c(0.3, 0.5, -0.5, -0.3),"cm")) +
   scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_continuous(limits = c(0, 60), breaks = seq(0, 60, 10), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 60), breaks = seq(0, 60, 20), expand = c(0, 0)) +
   scale_fill_manual(values = coolors)
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/area.png", 
   plot = area.plot,
-  h = 5, w = 10, units="cm", dpi=1200,
+  h = 4, w = 10, units="cm", dpi=1200,
   device="png")
 
 ## ---- Maternal education -----------------------------------------------------
@@ -671,15 +673,17 @@ mated.plot <- mated_plotdata %>%
   ylab("") +
   theme(legend.position = "none", 
         panel.grid.major.x = element_blank(), 
-        panel.grid.major.y = element_line(colour="grey")) +
+        panel.grid.major.y = element_line(colour="grey"),
+        plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm")) +
   scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_continuous(expand = c(0, 0)) +
+  scale_y_continuous(
+    limits = c(0, 80), breaks = seq(0, 80, 20), expand = c(0, 0)) +
   scale_fill_manual(values = coolors)
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/mated.png", 
   plot = mated.plot,
-  h = 10, w = 20, units="cm", dpi=1200,
+  h = 9, w = 20, units="cm", dpi=1200,
   device="png")
 
 ## ---- Gestational diabetes ---------------------------------------------------
@@ -697,18 +701,19 @@ pregdia.plot <- pregdia_plotdata %>%
         axis.text.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_line(colour="grey"),
-        axis.ticks.length = unit(0, "cm")) +
+        axis.ticks.length = unit(0, "cm"), 
+        plot.margin=unit(c(0.3, 0.5, 0, -0.3),"cm")) +
   scale_x_discrete(expand = c(0, 0)) + 
   scale_y_continuous(
     limits = c(0, 16),
-    breaks = seq(0, 16, 2),
+    breaks = seq(0, 16, 4),
     expand = c(0, 0)) +
   scale_fill_manual(values = coolors)
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/pregdia.png", 
   plot = pregdia.plot,
-  h = 5, w = 20, units="cm", dpi=1200,
+  h = 4, w = 22, units="cm", dpi=1200,
   device="png")
 
 ################################################################################
@@ -760,27 +765,27 @@ mat_ed_comb.pdata <- mat_ed_comb %>%
 
 ## ---- Plot -------------------------------------------------------------------
 mat_ed_comb.plot <- ggplot(data = mat_ed_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
   geom_point(
-    aes(colour = type), size = 1.5, 
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+    aes(colour = type), size = 2.5, 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   geom_errorbar(
     aes(colour = type),
-      size = 0.3, 
+      size = 0.5, 
       width = 0.1,
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
-  geom_hline(yintercept = 0, linetype = 2) + 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   xlab('Child age') + 
   ylab("Difference in childhood BMI by category of maternal education") +
-  labs(colour = "Type") +
   facet_wrap(~variable, scales = "fixed", strip.position = "top") + 
   forest_theme +
   coord_flip() +
-  scale_colour_manual(values = palette_n) +
-  theme(legend.title = element_blank()) + 
+  theme(legend.title = element_blank(), 
+        legend.position = "none") + 
   scale_y_continuous(
     limits = c(-1, 2),
     breaks = seq(-1, 2, 1),
-    expand = c(0, 0)) 
+    expand = c(0, 0)) +
+  scale_colour_manual(values = coolors[c(1, 5)])
 
 
 ################################################################################
@@ -818,26 +823,26 @@ ndvi_comb.pdata <- ndvi_comb %>%
 
 ## ---- Plot -------------------------------------------------------------------
 ndvi_comb.plot <- ggplot(data = ndvi_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
   geom_point(
-    aes(colour = type), size = 1.5, 
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+    aes(colour = type), size = 2.5, 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   geom_errorbar(
     aes(colour = type),
-    size = 0.3, 
+    size = 0.5, 
     width = 0.1,
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
-  geom_hline(yintercept = 0, linetype = 2) + 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   xlab('Child age') + 
   ylab("Difference in childhood BMI by unit change in NDVI") +
-  labs(colour = "Type") +
   forest_theme +
   coord_flip() +
-  scale_colour_manual(values = palette_n) +
-  theme(legend.title = element_blank()) + 
+  theme(legend.title = element_blank(), 
+        legend.position = "none") + 
   scale_y_continuous(
     limits = c(-1, 2),
     breaks = seq(-1, 2, 1),
-    expand = c(0, 0)) 
+    expand = c(0, 0)) +
+  scale_colour_manual(values = coolors[c(1, 5)])
 
 
 ################################################################################
@@ -881,27 +886,28 @@ area_comb.pdata <- area_comb %>%
 
 ## ---- Plot -------------------------------------------------------------------
 area_comb.plot <- ggplot(data = area_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
   geom_point(
-    aes(colour = type), size = 1.5, 
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+    aes(colour = type), size = 2.5, 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   geom_errorbar(
     aes(colour = type),
-    size = 0.3, 
+    size = 0.5, 
     width = 0.1,
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
-  geom_hline(yintercept = 0, linetype = 2) + 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   xlab('Child age') + 
   ylab("Difference in childhood BMI by category of area deprivation") +
   labs(colour = "Type") +
   facet_wrap(~variable, scales = "fixed", strip.position = "top") + 
   forest_theme +
   coord_flip() +
-  scale_colour_manual(values = palette_n) +
-  theme(legend.title = element_blank()) + 
+  theme(legend.title = element_blank(),
+         legend.position = "none") + 
   scale_y_continuous(
     limits = c(-1, 2),
     breaks = seq(-1, 2, 1),
-    expand = c(0, 0)) 
+    expand = c(0, 0)) +
+  scale_colour_manual(values = coolors[c(1, 5)])
 
 ################################################################################
 # Gestational diabetes  
@@ -938,26 +944,26 @@ dia_comb.pdata <- dia_comb %>%
 
 ## ---- Plot -------------------------------------------------------------------
 dia_comb.plot <- ggplot(data = dia_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
+  geom_hline(yintercept = 0, linetype = 2) + 
   geom_point(
-    aes(colour = type), size = 1.5, 
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
+    aes(colour = type), size = 2.5, 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   geom_errorbar(
     aes(colour = type),
-    size = 0.3, 
+    size = 0.5, 
     width = 0.1,
-    position = position_jitterdodge(dodge.width = -0.2, jitter.width = 0)) +
-  geom_hline(yintercept = 0, linetype = 2) + 
+    position = position_jitterdodge(dodge.width = -0.5, jitter.width = 0)) +
   xlab('Child age') + 
   ylab("Difference in chilhood BMI where gestational diabetes present") +
-  labs(colour = "Type") +
   forest_theme +
   coord_flip() +
-  scale_colour_manual(values = palette_n) +
-  theme(legend.title = element_blank()) + 
+  theme(legend.title = element_blank(),
+        legend.position = "none") + 
   scale_y_continuous(
     limits = c(-1, 2),
     breaks = seq(-1, 2, 1),
-    expand = c(0, 0)) 
+    expand = c(0, 0)) +
+  scale_colour_manual(values = coolors[c(1, 5)])
 
 ################################################################################
 # Save plots  
@@ -965,25 +971,25 @@ dia_comb.plot <- ggplot(data = dia_comb.pdata, aes(x = age, y = beta, ymin = ci_
 ggsave(
   filename = "~/wp4-bmi-poc/figures/mat_ed_comb.png", 
   plot = mat_ed_comb.plot,
-  h = 12, w = 16, units="cm", dpi=1200,
+  h = 10, w = 16, units="cm", dpi=1200,
   device="png")
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/ndvi_comb.png", 
   plot = ndvi_comb.plot,
-  h = 12, w = 16, units="cm", dpi=1200,
+  h = 10, w = 16, units="cm", dpi=1200,
   device="png")
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/area_comb.png", 
   plot = area_comb.plot,
-  h = 12, w = 16, units="cm", dpi=1200,
+  h = 10, w = 16, units="cm", dpi=1200,
   device="png")
 
 ggsave(
   filename = "~/wp4-bmi-poc/figures/dia_comb.png", 
-  plot = dia.plot,
-  h = 12, w = 16, units="cm", dpi=1200,
+  plot = dia_comb.plot,
+  h = 10, w = 16, units="cm", dpi=1200,
   device="png")
 
 
