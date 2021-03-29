@@ -194,7 +194,6 @@ dh.makeGlmForm <- function(x, type, dummy_suff = "_dummy", data = "analysis_df")
     
   }
   
-  
   else if(type == "slma"){
     
     mod <- list(

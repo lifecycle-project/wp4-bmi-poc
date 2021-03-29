@@ -46,11 +46,77 @@ yearrep.vars <- c(
 ## ---- Make tibble of details for each cohort ---------------------------------
 cohorts_tables <- bind_rows(
   tibble(
+    cohort = "alspac",
+    table = c(
+      "alspac/2_1_core_1_2/non_rep",
+      "alspac/2_1_core_1_2/monthly_rep",
+      "alspac/2_1_core_1_2/yearly_rep")),
+  tibble(
+    cohort = "bib",
+    table = c(
+      "xxxx",
+      "xxxx",
+      "xxxx")),
+  tibble(
+    cohort = "chop",
+    table = c(
+      "lc_chop_core_2_1.2_1_core_non_rep_bmi_earlylife_poc",
+      "lc_chop_core_2_1.2_1_core_monthly_rep_bmi_earlylife_poc",
+      "lc_chop_core_2_1.2_1_core_yearly_rep_bmi_earlylife_poc")),
+  tibble(
+    cohort = "dnbc",
+    table = c(
+      "lc_dnbc_core_2_1.2_1_core_non_rep_tcadman_2020-lc19",
+      "lc_dnbc_core_2_1.2_1_core_monthly_rep_tcadman_2020-lc19",
+      "lc_dnbc_core_2_1.2_1_core_yearly_rep_tcadman_2020-lc19")), 
+  tibble(
+    cohort = "eden",
+    table = c(
+      "lc_eden_core_2_1.Project6_WP4_non_rep", 
+      "lc_eden_core_2_1.Project6_WP4_monthly_rep", 
+      "lc_eden_core_2_1.Project6_WP4_yearly_rep")),
+  tibble(
+    cohort = "elfe",
+    table = c(
+      "lc_elfe_core_2_1.Project6_WP4_non_rep", 
+      "lc_elfe_core_2_1.Project6_WP4_monthly_rep", 
+      "lc_elfe_core_2_1.Project6_WP4_yearly_rep")),
+  tibble(
+    cohort = "gecko",
+    table = c(
+      "lc_gecko_core_2_1.2_1_core_1_1_non_rep",
+      "lc_gecko_core_2_1.2_1_core_1_1_monthly_rep",
+      "lc_gecko_core_2_1.2_1_core_1_1_yearly_rep")),
+  tibble(
     cohort = "genr",
     table = c(
       "lifecycle_1_0.1_0_genr_1_0_non_repeated",
       "lifecycle_1_0.1_0_genr_1_0_monthly_repeated",
       "lifecycle_1_0.1_0_genr_1_0_yearly_repeated")),
+  tibble(
+    cohort = "hgs",
+    table = c(
+      "hgs/2_1_core_1_0/non_rep",
+      "hgs/2_1_core_1_0/monthly_rep",
+      "hgs/2_1_core_1_0/yearly_rep")),
+  tibble(
+    cohort = "inma",
+    table = c(
+      "lc_isglobal_core_2_1.2_1_core_1_0_non_rep_200217_1_bmi",
+      "lc_isglobal_core_2_1.2_1_core_1_0_monthly_rep_200217_1_bmi",
+      "lc_isglobal_core_2_1.2_1_core_1_0_yearly_rep_200217_1_bmi")),
+  tibble(
+    cohort = "moba",
+    table = c(
+      "lc_moba_core_2_0.2_0_core_non_rep_bmi_poc_study",
+      "lc_moba_core_2_0.2_0_core_monthly_rep_bmi_poc_study",
+      "lc_moba_core_2_0.2_0_core_yearly_rep_bmi_poc_study")), 
+  tibble(
+    cohort = "nfbc86",
+    table = c(
+      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_non_rep", 
+      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_monthly_rep", 
+      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_yearly_rep")),
   tibble(
     cohort = "ninfea",
     table = c(
@@ -64,57 +130,16 @@ cohorts_tables <- bind_rows(
       "lc_raine_core_2_1.2_1_core_1_0_monthly_rep",
       "lc_raine_core_2_1.2_1_core_1_0_yearly_rep")),
   tibble(
-    cohort = "gecko",
-    table = c(
-      "lc_gecko_core_2_1.2_1_core_1_1_non_rep",
-      "lc_gecko_core_2_1.2_1_core_1_1_monthly_rep",
-      "lc_gecko_core_2_1.2_1_core_1_1_yearly_rep")),
-  tibble(
-    cohort = "chop",
-    table = c(
-      "lc_chop_core_2_1.2_1_core_non_rep_bmi_earlylife_poc",
-      "lc_chop_core_2_1.2_1_core_monthly_rep_bmi_earlylife_poc",
-      "lc_chop_core_2_1.2_1_core_yearly_rep_bmi_earlylife_poc")),
-  tibble(
-    cohort = "moba",
-    table = c(
-      "lc_moba_core_2_0.2_0_core_non_rep_bmi_poc_study",
-      "lc_moba_core_2_0.2_0_core_monthly_rep_bmi_poc_study",
-      "lc_moba_core_2_0.2_0_core_yearly_rep_bmi_poc_study")), 
-  tibble(
-    cohort = "inma",
-    table = c(
-      "lc_isglobal_core_2_1.2_1_core_1_0_non_rep_200217_1_bmi",
-      "lc_isglobal_core_2_1.2_1_core_1_0_monthly_rep_200217_1_bmi",
-      "lc_isglobal_core_2_1.2_1_core_1_0_yearly_rep_200217_1_bmi")),
-  tibble(
-    cohort = "dnbc",
-    table = c(
-      "lc_dnbc_core_2_1.2_1_core_non_rep_tcadman_2020-lc19",
-      "lc_dnbc_core_2_1.2_1_core_monthly_rep_tcadman_2020-lc19",
-      "lc_dnbc_core_2_1.2_1_core_yearly_rep_tcadman_2020-lc19")), 
-  tibble(
-    cohort = "elfe",
-    table = c(
-      "lc_elfe_core_2_1.Project6_WP4_non_rep", 
-      "lc_elfe_core_2_1.Project6_WP4_monthly_rep", 
-      "lc_elfe_core_2_1.Project6_WP4_yearly_rep")),
-  tibble(
     cohort = "sws",
     table = c(
       "lc_sws_core_2_1.2_1_core_1_1_non_rep", 
       "lc_sws_core_2_1.2_1_core_1_1_monthly_rep", 
-      "lc_sws_core_2_1.2_1_core_1_1_yearly_rep")), 
-  tibble(
-    cohort = "nfbc86",
-    table = c(
-      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_non_rep", 
-      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_monthly_rep", 
-      "lc_nfbc86_core_2_1.p0650_nfbc86_2_1_core_yearly_rep"))) %>%
-  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 11))
+      "lc_sws_core_2_1.2_1_core_1_1_yearly_rep"))) %>%
+  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 15))
          
 ## ---- Assign tables ----------------------------------------------------------
 cohorts_tables %>%
+  filter(cohort %in% c("alspac", "hgs")) %>%
   pwalk(function(cohort, table, type){
   
   datashield.assign(
