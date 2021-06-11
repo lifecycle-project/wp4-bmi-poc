@@ -15,8 +15,7 @@ require(magrittr)
 require(dsHelper)
 library(purrr)
 
-
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
 # Issues to report
 # 
@@ -186,20 +185,39 @@ dh.makeGlmForm <- function(x, type, dummy_suff = "_dummy", data = "analysis_df")
   
   if(type == "ipd"){
     
+    if(length(x$covariates == 0)){
+      
+      mod <- list(
+        model = paste0(
+          x$outcome, "~", x$exposure, "+", paste0(x$cohorts[-1], "_dummy", collapse = "+")),
+        cohorts = x$"cohorts"
+      )
+    } else if(length(x$covariates >0)){
+    
     mod <- list(
       model = paste0(x$outcome, "~", x$exposure, "+", paste0(x$covariates, collapse = "+"), 
                      "+", paste0(x$cohorts[-1], "_dummy", collapse = "+")),
       cohorts = x$"cohorts"
     )
     
+    }
   }
   
   else if(type == "slma"){
     
+    if(length(x$covariates == 0)){
+      mod <- list(
+        model = paste0(x$outcome, "~", x$exposure), 
+        cohorts = x$cohorts
+      )
+      
+    } else if(length(x$covariates > 0)){
     mod <- list(
       model = paste0(x$outcome, "~", x$exposure, "+", paste0(x$covariates, collapse = "+")), 
       cohorts = x$cohorts
     )
+    
+    }
     
   }
   

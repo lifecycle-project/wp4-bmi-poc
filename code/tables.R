@@ -762,6 +762,7 @@ mat_ed_comb.pdata <- mat_ed_comb %>%
       ordered = TRUE)
   )
 
+beta, lower_ci, upper_ci, estimate_type
 
 ## ---- Plot -------------------------------------------------------------------
 mat_ed_comb.plot <- ggplot(data = mat_ed_comb.pdata, aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
