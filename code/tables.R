@@ -20,7 +20,7 @@ library(ggplot2)
 library(dsHelper)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
-
+source("https://raw.githubusercontent.com/timcadman/useful-code-r/master/code/themes/lc-names-neat.R")
 
 ################################################################################
 # METHODS  
@@ -33,25 +33,25 @@ names(conns) %>% sort()
 ################################################################################
 # Maximum sample size
 ################################################################################
-
-## ---- Analysis dataset -------------------------------------------------------
-cohort_ns <- descriptives_ss[[1]] %>%
-  filter(variable == "sex" & category == 1) %>%
-  select(cohort, cohort_n) %>%
-  arrange(cohort) 
-
-## ---- Original dataset -------------------------------------------------------
 original_n <- dh.getStats(
   df = "nonrep", 
   vars = "sex",
   conns = conns
 )
 
-original_n[[1]] %>%
+## ---- Original dataset -------------------------------------------------------
+max_n <- original_n[[1]] %>%
   filter(variable == "sex" & category == 1) %>%
-  select(cohort, cohort_n) %>%
-  arrange(cohort) 
+  select(cohort, cohort_n)
 
+## ---- Analysis dataset -------------------------------------------------------
+cohort_ns <- descriptives[[1]] %>%
+  filter(variable == "sex" & category == 1) %>%
+  select(cohort, cohort_n) 
+
+## ---- Participants with no eligible data -------------------------------------
+max_n %>% filter(cohort == "combined") %>% pull(cohort_n) - 
+cohort_ns %>% filter(cohort == "combined") %>% pull(cohort_n)
 
 ################################################################################
 # Data prep  
@@ -59,22 +59,10 @@ original_n[[1]] %>%
 
 ## Make tibble of cohort names and sample sizes as I want to display in paper
 ref_tab <- cohort_ns %>%
+  left_join(., names_neat, by = "cohort") %>%
   mutate(
-    cohort_neat = case_when(
-      cohort == "chop" ~ "CHOP",
-      cohort == "dnbc" ~ "DNBC",
-      cohort == "elfe" ~ "ELFE",
-      cohort == "gecko" ~ "GECKO",
-      cohort == "genr" ~ "Gen-R", 
-      cohort == "inma" ~ "INMA", 
-      cohort == "moba" ~ "MoBa", 
-      cohort == "nfbc86" ~ "NFBC86",
-      cohort == "ninfea" ~ "NINFEA",
-      cohort == "raine" ~ "Raine",
-      cohort == "sws" ~ "SWS",
-      cohort == "combined" ~ "Combined"),
     names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")
-  )
+    )
 
 
 ################################################################################
@@ -86,11 +74,11 @@ ref_tab <- cohort_ns %>%
 cov_cat.tab <- descriptives$categorical %>%
   filter(variable %in% c("sex", "parity_bin", "preg_smk", "preg_ht", 
                          "ethn3_m")) %>%
-  mutate(n_perc = paste0(value, " (", valid_perc, ")"), 
-         missing = paste0(missing_n, " (", missing_perc, ")")) %>%
-  select(cohort, variable, category, n_perc, missing) %>% 
-  pivot_wider(names_from = c(variable, category),  
-              values_from = c(n_perc, missing))
+  mutate(n_perc = paste0(value, " (", perc_valid, ")")) %>%
+  select(cohort, variable, category, n_perc) %>% 
+  pivot_wider(
+    names_from = c(variable, category),  
+    values_from = n_perc)
 
 cov_cont.tab <- descriptives$continuous %>%
   filter(variable %in% c("prepreg_bmi", "agebirth_m_y")) %>%
@@ -101,12 +89,10 @@ cov_cont.tab <- descriptives$continuous %>%
 
 cov.tab <- bind_cols(cov_cat.tab, select(cov_cont.tab, -cohort)) %>%
   left_join(., ref_tab, by = "cohort") %>%
-  select(names_neat, n_perc_sex_1, missing_sex_1, n_perc_parity_bin_0,
-         missing_parity_bin_0, n_perc_ethn3_m_1, n_perc_ethn3_m_2,
-         n_perc_ethn3_m_3, missing_ethn3_m_1, n_perc_preg_smk_1, 
-         missing_preg_smk_1, med_range_prepreg_bmi, missing_prepreg_bmi, 
-         med_range_agebirth_m_y, missing_agebirth_m_y, n_perc_preg_ht_1, 
-         missing_preg_ht_1) %>%
+  select(names_neat, sex_1, sex_missing, parity_bin_0, parity_bin_missing, 
+         ethn3_m_1, ethn3_m_2, ethn3_m_3, ethn3_m_missing, preg_smk_1, 
+         preg_smk_missing, preg_ht_1, preg_ht_missing, med_range_prepreg_bmi, 
+         missing_prepreg_bmi, med_range_agebirth_m_y, missing_agebirth_m_y) %>%
   arrange(names_neat) 
 
 write.csv(cov.tab)
