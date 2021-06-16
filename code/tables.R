@@ -105,7 +105,7 @@ write_csv(cov.tab, path = here("tables", "covariates.csv"))
 ################################################################################
 
 ## ---- Maternal education -----------------------------------------------------
-descriptives$categorical %>%
+edu_desc.plot <- descriptives$categorical %>%
   filter(variable == "edu_m" & !cohort == "combined") %>%
   mutate(
     category = 
@@ -131,7 +131,7 @@ descriptives$categorical %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ## ---- Area deprivation -------------------------------------------------------
-descriptives$categorical %>%
+area_dep_desc.plot <- descriptives$categorical %>%
   filter(
     variable == "area_dep" & !cohort == "combined") %>%
   mutate(
@@ -158,7 +158,7 @@ descriptives$categorical %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ## ---- Pregnancy diabetes -----------------------------------------------------
-descriptives$categorical %>%
+preg_dia_desc.plot <- descriptives$categorical %>%
   filter(
     variable == "preg_dia" & !cohort == "combined") %>%
   mutate(
@@ -184,7 +184,7 @@ descriptives$categorical %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ## ---- NDVI -------------------------------------------------------------------
-descriptives$continuous %>%
+ndvi_desc.plot <- descriptives$continuous %>%
   filter(
     variable == "ndvi" & !cohort == "combined") %>%
   left_join(., ref_tab, by = "cohort") %>%
@@ -208,41 +208,36 @@ descriptives$continuous %>%
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     
-    
-    panel.background = element_rect(fill =scales::alpha("#CCCCCC", 0.3)))
-    , 
-    panel.grid.major=element_line(colour="grey"))                                
-                                    ))
 
-panel.background = element_rect(fill="white"),  #Background for plot
-panel.grid.major=element_line(colour="grey"), #Major and minor gridlines
-panel.grid.minor=element_line(colour="white"), 
-panel.spacing = unit(1, "lines"),
-plot.title = element_text(family = "avenir-book", hjust = 0.5, vjust=0, size=12, face="bold"), #Plot title, thought don't tend to use
-text=element_text(family = "avenir-book", size=9), #General text 
-axis.title.y = element_text(family = "avenir-book", size=14, margin = margin(t = 0, r = 10, b = 0, l = 0)), #Axis labels
-axis.title.x = element_text(family = "avenir-book", size=14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-axis.text.x = element_text(family = "avenir-book", size=11, margin = margin(t = 4, r=0, b=0, l=0), colour="black"), #Axis text
-axis.text.y = element_text(family = "avenir-book", size=11, margin = margin(t = 0, r=4, b=0, l=0), colour="black"),
+## ---- Save plots -------------------------------------------------------------
+ggsave(
+  plot = edu_desc.plot,
+  filename = here("figures", "edu_desc.png"),
+  h = 15, w = word_full, 
+  units="cm", 
+  dpi=1200, type="cairo")
 
+ggsave(
+  plot = edu_desc.plot,
+  filename = here("figures", "area_dep_desc.png"),
+  h = 15, w = word_full, 
+  units="cm", 
+  dpi=1200, type="cairo")
 
-  mutate(n_perc = paste0(value, " (", perc_valid, ")")) %>%
-  select(cohort, variable, category, n_perc) %>%
-  pivot_wider(names_from = c(variable, category), values_from = n_perc) 
+ggsave(
+  plot = edu_desc.plot,
+  filename = here("figures", "preg_dia_desc.png"),
+  h = 15, w = word_full, 
+  units="cm", 
+  dpi=1200, type="cairo")
 
-exposure_cont <- descriptives$continuous %>%
-  filter(variable == "ndvi") %>%
-  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
-  select(cohort, variable, med_range) %>%
-  pivot_wider(names_from = variable, values_from = med_range)
+ggsave(
+  plot = edu_desc.plot,
+  filename = here("figures", "ndvi_desc.png"),
+  h = 15, w = word_full, 
+  units="cm", 
+  dpi=1200, type="cairo")
 
-exposure.tab <- bind_cols(exposure_cat, select(exposure_cont, -cohort)) %>%
-  left_join(., ref_tab, by = "cohort") %>%
-  select(names_neat, edu_m_1, edu_m_2, edu_m_3, area_dep_1, area_dep_2, 
-         area_dep_3, ndvi, preg_dia_1) %>%
-  arrange(names_neat) 
-
-write_csv(exposure.tab, path = here("tables", "exposures.csv"))
 
 ################################################################################
 # Table 2: Outcomes descriptive statistics  
