@@ -18,9 +18,12 @@ library(tidyr)
 library(purrr)
 library(ggplot2)
 library(dsHelper)
+library(here)
+library(readr)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 source("https://raw.githubusercontent.com/timcadman/useful-code-r/master/code/themes/lc-names-neat.R")
+source("https://raw.githubusercontent.com/timcadman/useful-code-r/master/code/themes/themes.R")
 
 ################################################################################
 # METHODS  
@@ -95,14 +98,135 @@ cov.tab <- bind_cols(cov_cat.tab, select(cov_cont.tab, -cohort)) %>%
          missing_prepreg_bmi, med_range_agebirth_m_y, missing_agebirth_m_y) %>%
   arrange(names_neat) 
 
-write.csv(cov.tab)
+write_csv(cov.tab, path = here("tables", "covariates.csv"))
 
 ################################################################################
-# Table 1: Exposures descriptive statistics  
+# Figure 1: Exposures descriptive statistics  
 ################################################################################
-exposure_cat <- descriptives$categorical %>%
-  filter(variable %in% c("edu_m", "preg_dia", "area_dep")) %>%
-  mutate(n_perc = paste0(value, " (", valid_perc, ")")) %>%
+
+## ---- Maternal education -----------------------------------------------------
+descriptives$categorical %>%
+  filter(variable == "edu_m" & !cohort == "combined") %>%
+  mutate(
+    category = 
+      factor(
+        case_when(
+          category == 1 ~ "High", 
+          category == 2 ~ "Medium", 
+          category == 3 ~ "Low", 
+          category == "missing" ~ "Missing"), 
+        levels = c("Low", "Medium", "High", "Missing"), 
+        ordered = TRUE)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  ggplot(aes(x = category, y = perc_total)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort_neat, ncol = 14) +
+  ylab("Percentage") +
+  ggtitle("Maternal education") +
+  coord_cartesian(
+    ylim = c(0, 100), 
+    expand = FALSE) +
+  theme_std + 
+  theme_hv +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+## ---- Area deprivation -------------------------------------------------------
+descriptives$categorical %>%
+  filter(
+    variable == "area_dep" & !cohort == "combined") %>%
+  mutate(
+    category = 
+      factor(
+        case_when(
+          category == 1 ~ "Low", 
+          category == 2 ~ "Medium", 
+          category == 3 ~ "High", 
+          category == "missing" ~ "Missing"), 
+        levels = c("Low", "Medium", "High", "Missing"), 
+        ordered = TRUE)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  ggplot(aes(x = category, y = perc_total)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort_neat, ncol = 14) +
+  ylab("Percentage") +
+  ggtitle("Area deprivation") +
+  coord_cartesian(
+    ylim = c(0, 100), 
+    expand = FALSE) +
+  theme_std + 
+  theme_hv +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+descriptives$categorical %>%
+  filter(
+    variable == "preg_dia" & !cohort == "combined") %>%
+  mutate(
+    category = 
+      factor(
+        case_when(
+          category == 0 ~ "No", 
+          category == 1 ~ "Yes", 
+          category == "missing" ~ "Missing"), 
+        levels = c("No", "Yes", "Missing"), 
+        ordered = TRUE)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  ggplot(aes(x = category, y = perc_total)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~cohort_neat, ncol = 13) +
+  ylab("Percentage") +
+  ggtitle("Pregnancy diabetes") +
+  coord_cartesian(
+    ylim = c(0, 100), 
+    expand = FALSE) +
+  theme_std + 
+  theme_hv +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+## ---- NDVI -------------------------------------------------------------------
+descriptives$continuous %>%
+  filter(
+    variable == "ndvi" & !cohort == "combined") %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  ggplot(aes(x = variable)) +
+  geom_boxplot(
+    aes(
+      ymin = perc_5, 
+      lower = perc_25, 
+      middle = perc_50, 
+      upper = perc_75, 
+      ymax = perc_95), 
+    stat = "identity") +
+  facet_wrap(~cohort_neat, ncol = 13) +
+  ylab("Percentage") +
+  ggtitle("Normalised Difference Vegetation Index") +
+  coord_cartesian(
+    ylim = c(0, 1), 
+    expand = FALSE) +
+  theme_std + 
+  theme_hv +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    
+    
+    panel.background = element_rect(fill =scales::alpha("#CCCCCC", 0.3)))
+    , 
+    panel.grid.major=element_line(colour="grey"))                                
+                                    ))
+
+panel.background = element_rect(fill="white"),  #Background for plot
+panel.grid.major=element_line(colour="grey"), #Major and minor gridlines
+panel.grid.minor=element_line(colour="white"), 
+panel.spacing = unit(1, "lines"),
+plot.title = element_text(family = "avenir-book", hjust = 0.5, vjust=0, size=12, face="bold"), #Plot title, thought don't tend to use
+text=element_text(family = "avenir-book", size=9), #General text 
+axis.title.y = element_text(family = "avenir-book", size=14, margin = margin(t = 0, r = 10, b = 0, l = 0)), #Axis labels
+axis.title.x = element_text(family = "avenir-book", size=14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+axis.text.x = element_text(family = "avenir-book", size=11, margin = margin(t = 4, r=0, b=0, l=0), colour="black"), #Axis text
+axis.text.y = element_text(family = "avenir-book", size=11, margin = margin(t = 0, r=4, b=0, l=0), colour="black"),
+
+
+  mutate(n_perc = paste0(value, " (", perc_valid, ")")) %>%
   select(cohort, variable, category, n_perc) %>%
   pivot_wider(names_from = c(variable, category), values_from = n_perc) 
 
@@ -118,8 +242,7 @@ exposure.tab <- bind_cols(exposure_cat, select(exposure_cont, -cohort)) %>%
          area_dep_3, ndvi, preg_dia_1) %>%
   arrange(names_neat) 
 
-write.csv(exposure.tab)
-
+write_csv(exposure.tab, path = here("tables", "exposures.csv"))
 
 ################################################################################
 # Table 2: Outcomes descriptive statistics  
@@ -139,7 +262,7 @@ outcomes.tab <- descriptives$continuous %>%
          valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
   arrange(names_neat)
 
-write.csv(outcomes.tab)
+write_csv(outcomes.tab, path = here("tables", "outcomes.csv"))
 
 ################################################################################
 # Table S5 height and weight by age to check BMI validity  
@@ -166,31 +289,30 @@ wt.tab <- descriptives$continuous %>%
          med_range_wt.5113, valid_n_wt.6544, med_range_wt.6544) %>%
   arrange(names_neat) 
   
-  
-write.csv(ht.tab)
-write.csv(wt.tab)
+write_csv(ht.tab, path = here("tables", "height.csv"))
+write_csv(wt.tab, path = here("tables", "weight.csv"))
 
 
 ################################################################################
 # Table 3: Main analysis  
 ################################################################################
 mat_ed.tab <- mat_ed.fit[[1]] %>% 
-  map(dh.glmTab, type = "ipd") %>%
+  map(dh.lmTab, type = "ipd", ci_format = "paste", direction = "wide") %>%
   reduce(left_join, by = "variable") %>%
   filter(variable %in% c("edu_m2", "edu_m3")) 
 
 area_dep.tab <- area_dep.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
+  map(dh.lmTab, type = "ipd", ci_format = "paste", direction = "wide") %>%
   reduce(left_join, by = "variable") %>%
   filter(variable %in% c("area_dep2", "area_dep3")) 
   
 ndvi.tab <- ndvi.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
+  map(dh.lmTab, type = "ipd", ci_format = "paste", direction = "wide") %>%
   reduce(left_join, by = "variable") %>%
   filter(variable == "ndvi") 
 
 preg_dia.tab <- preg_dia.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
+  map(dh.lmTab, type = "ipd", ci_format = "paste", direction = "wide") %>%
   reduce(left_join, by = "variable") %>%
   filter(variable == "preg_dia1") 
 

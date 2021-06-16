@@ -12,8 +12,11 @@ library(dsBaseClient)
 require(stringr)
 require(dplyr)
 require(magrittr)
-require(dsHelper)
 library(purrr)
+
+library(remotes)
+install_github("lifecycle-project/dshelper", ref = "features")
+library(dsHelper)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
@@ -75,7 +78,7 @@ descriptives$continuous %>% filter(variable == "bmi.5113")
 descriptives$continuous %>% filter(variable == "bmi.6544")
 
 descriptives$categorical %>% filter(variable == "preg_dia")
-
+descriptives$categorical %>% filter(variable == "preg_ht") %>% print(n = Inf)
 
 ## ---- Maternal education -----------------------------------------------------
 cohorts <- names(conns)

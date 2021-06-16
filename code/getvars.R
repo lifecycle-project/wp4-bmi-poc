@@ -38,7 +38,8 @@ nonrep.vars <- c(
   "child_id", "sex", "coh_country", "preg_dia", "agebirth_m_y", "preg_smk", 
   "parity_m", "height_m", "prepreg_weight", "ethn3_m", "preg_ht", "ga_bj", 
   "ga_us", "cohort_id", "areases_quint_preg", "green_dist_preg", 
-  "green_size_preg", "ndvi300_preg", "areases_tert_preg", "greenyn300_preg"
+  "green_size_preg", "ndvi300_preg", "areases_tert_preg", "greenyn300_preg", 
+  "abroad_m"
 )
 
 ## monthly repeated
@@ -504,7 +505,7 @@ ga_sum <- dh.getStats(
 ds.assign(
   toAssign = "nonrep_fix$ga_bj", 
   newobj = "ga_all",
-  datasources = conns[conns!="moba"]
+  datasources = conns[!conns %in% c("hgs", "moba")]
 ) 
 
 ds.assign(
@@ -807,7 +808,7 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_10")
 
 ## ---- First we specify vectors of exposures and outcomes ---------------------
 exp.vars <- c(
-  "edu_m", "ga_all", "preg_dia", "ndvi", "ndvi", "area_dep")
+  "edu_m", "ga_all", "preg_dia", "ndvi", "area_dep")
            
 out.vars <- c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", "bmi.6544")
   
@@ -816,7 +817,7 @@ cov.vars <- c(
   "prepreg_bmi", "agebirth_m_y")
 
 other.vars <- c(
-  "age_days.730", "age_days.1461", "age_days.2922", "age_days.5113", 
+  "child_id", "age_days.730", "age_days.1461", "age_days.2922", "age_days.5113", 
   "age_days.6544", "age_months.24", "age_months.48", "age_months.96", 
   "age_months.168", "age_months.215", "ht.730", "ht.1461", "ht.2922", 
   "ht.5113", "ht.6544", "wt.730", "wt.1461", "wt.2922", "wt.5113", "wt.6544", 
