@@ -473,3 +473,38 @@ preg_dia_remove.fit <- list(
 )
 
 save.image()
+
+################################################################################
+# 7. Exploring missingness  
+################################################################################
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_10")
+
+For most regression models, including linear and logistic regression, CCA also 
+gives unbiased results when the chance of being a complete case does not depend 
+on the outcome after taking the covariates into consideration (for example, by 
+including them in the regression model).
+
+cc_ref <- list(
+  cc_edu_1 = list(
+    vars = c("edu_m", "bmi.730", "sex"), 
+    name = "cc_edu_1"), 
+  cc_edu_2 = list(
+    vars = c("edu_m", "bmi.1461", "sex"), 
+    name = "cc_edu_2"), 
+  cc_edu_3 = list(
+    vars = c("edu_m", "bmi.2922", "sex"), 
+    name = "cc_edu_3"), 
+  cc_edu_4 = list(
+    vars = c("edu_m", "bmi.5113", "sex"), 
+    name = "cc_edu_4"), 
+  cc_edu_5 = list(
+    vars = c("edu_m", "bmi.6544", "sex"), 
+    name = "cc_edu_5"))
+  
+
+
+descriptives$continuous %>% filter(variable == "bmi.730")
+descriptives$continuous %>% filter(variable == "bmi.1461")
+descriptives$continuous %>% filter(variable == "bmi.2922")
+descriptives$continuous %>% filter(variable == "bmi.5113")
+descriptives$continuous %>% filter(variable == "bmi.6544")
