@@ -69,7 +69,44 @@ ref_tab <- cohort_ns %>%
 
 
 ################################################################################
-# Table S3: Ns for complete cases  
+# Table S4: Sample characteristics analysis sample vs full  
+################################################################################
+makeSampleComp <- function(x){
+
+tmp_1 <- x$continuous %>%
+  filter(
+    variable %in% c(
+      "ga_all", "ndvi", "bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
+      "bmi.6544", "height_m", "prepreg_bmi", "agebirth_m_y") &
+    cohort == "combined") %>%
+  mutate(value = paste0(perc_50, " (", perc_5, ",", perc_95, ")")) %>%
+  select(variable, value, cohort_n) %>%
+  mutate(category = NA)
+
+tmp_2 <- x$categorical %>%
+  filter(
+    variable %in% c(
+      "edu_m", "preg_dia", "area_dep", "sex", "preg_smk", "preg_ht", 
+      "parity_bin", "ethn3_m") &
+    cohort == "combined" &
+      category != "missing") %>%
+  mutate(value = paste0(value, " (", perc_valid, ")")) %>%
+  select(variable, category, value, cohort_n)
+
+out <- bind_rows(tmp_1, tmp_2)
+
+}
+
+a_sample.desc <- makeSampleComp(descriptives) %>% mutate(sample = "analysis")
+f_sample.desc <- makeSampleComp(descriptives_full) %>% mutate(sample = "full")
+
+sample_comp <- bind_rows(a_sample.desc, f_sample.desc)
+  
+write.csv(sample_comp, here("tables", "sample-comparison.csv"))
+
+
+################################################################################
+# Table S5: Ns for complete cases  
 ################################################################################
 cc.tab <- miss_descriptives$categorical %>%
   mutate(variable = str_remove(variable, "_m_fact")) %>%
@@ -83,14 +120,68 @@ cc.tab <- miss_descriptives$categorical %>%
 write.csv(cc.tab, here("tables", "complete_cases.csv"))  
 
 
+################################################################################
+# Table S6: BMI descriptives   
+################################################################################
+outcomes.tab <- descriptives$continuous %>%
+  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
+                         "bmi.6544", "age_months.24", "age_months.48", 
+                         "age_months.96", "age_months.168", "age_months.215")) %>%
+  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
+  select(cohort, variable, med_range, valid_n) %>%
+  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  select(names_neat, valid_n_bmi.730, med_range_age_months.24, med_range_bmi.730, 
+         valid_n_bmi.1461, med_range_age_months.48, med_range_bmi.1461,
+         valid_n_bmi.2922, med_range_age_months.96, med_range_bmi.2922,
+         valid_n_bmi.5113, med_range_age_months.168, med_range_bmi.5113, 
+         valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
+  arrange(names_neat)
 
+write_csv(outcomes.tab, path = here("tables", "outcomes.csv"))
 
 
 ################################################################################
-# RESULTS  
+# Table S7: Height descriptives  
 ################################################################################
+ht.tab <- descriptives$continuous %>%
+  filter(variable %in% c("ht.730", "ht.1461", "ht.2922", "ht.5113", "ht.6544")) %>%
+  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
+  select(cohort, variable, med_range, valid_n) %>%
+  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  select(names_neat, valid_n_ht.730, med_range_ht.730, valid_n_ht.1461, 
+         med_range_ht.1461, valid_n_ht.2922, med_range_ht.2922, valid_n_ht.5113, 
+         med_range_ht.5113, valid_n_ht.6544, med_range_ht.6544) %>%
+  arrange(names_neat) 
+
+write_csv(ht.tab, path = here("tables", "height.csv"))
+
+
 ################################################################################
-# Table S4: Covariate descriptive statistics  
+# Table S8: Weight descriptives   
+################################################################################
+wt.tab <- descriptives$continuous %>%
+  filter(variable %in% c("wt.730", "wt.1461", "wt.2922", "wt.5113", "wt.6544")) %>%
+  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
+  select(cohort, variable, med_range, valid_n) %>%
+  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  select(names_neat, valid_n_wt.730, med_range_wt.730, valid_n_wt.1461, 
+         med_range_wt.1461, valid_n_wt.2922, med_range_wt.2922, valid_n_wt.5113, 
+         med_range_wt.5113, valid_n_wt.6544, med_range_wt.6544) %>%
+  arrange(names_neat) 
+
+write_csv(wt.tab, path = here("tables", "weight.csv"))
+
+
+################################################################################
+# Table S9: Median age at BMI measurement  
+################################################################################
+
+
+################################################################################
+# Table S10: Covariate descriptive statistics  
 ################################################################################
 cov_cat.tab <- descriptives$categorical %>%
   filter(variable %in% c("sex", "parity_bin", "preg_smk", "preg_ht", 
@@ -120,54 +211,6 @@ write_csv(cov.tab, path = here("tables", "covariates.csv"))
 
 
 
-
-################################################################################
-# Table 2: Outcomes descriptive statistics  
-################################################################################
-outcomes.tab <- descriptives$continuous %>%
-  filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
-                         "bmi.6544", "age_months.24", "age_months.48", 
-                         "age_months.96", "age_months.168", "age_months.215")) %>%
-  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
-  select(cohort, variable, med_range, valid_n) %>%
-  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
-  left_join(., ref_tab, by = "cohort") %>%
-  select(names_neat, valid_n_bmi.730, med_range_age_months.24, med_range_bmi.730, 
-         valid_n_bmi.1461, med_range_age_months.48, med_range_bmi.1461,
-         valid_n_bmi.2922, med_range_age_months.96, med_range_bmi.2922,
-         valid_n_bmi.5113, med_range_age_months.168, med_range_bmi.5113, 
-         valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
-  arrange(names_neat)
-
-write_csv(outcomes.tab, path = here("tables", "outcomes.csv"))
-
-################################################################################
-# Table S5 height and weight by age to check BMI validity  
-################################################################################
-ht.tab <- descriptives$continuous %>%
-  filter(variable %in% c("ht.730", "ht.1461", "ht.2922", "ht.5113", "ht.6544")) %>%
-  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
-  select(cohort, variable, med_range, valid_n) %>%
-  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
-  left_join(., ref_tab, by = "cohort") %>%
-select(names_neat, valid_n_ht.730, med_range_ht.730, valid_n_ht.1461, 
-       med_range_ht.1461, valid_n_ht.2922, med_range_ht.2922, valid_n_ht.5113, 
-       med_range_ht.5113, valid_n_ht.6544, med_range_ht.6544) %>%
-  arrange(names_neat) 
-
-wt.tab <- descriptives$continuous %>%
-  filter(variable %in% c("wt.730", "wt.1461", "wt.2922", "wt.5113", "wt.6544")) %>%
-  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
-  select(cohort, variable, med_range, valid_n) %>%
-  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
-  left_join(., ref_tab, by = "cohort") %>%
-  select(names_neat, valid_n_wt.730, med_range_wt.730, valid_n_wt.1461, 
-         med_range_wt.1461, valid_n_wt.2922, med_range_wt.2922, valid_n_wt.5113, 
-         med_range_wt.5113, valid_n_wt.6544, med_range_wt.6544) %>%
-  arrange(names_neat) 
-  
-write_csv(ht.tab, path = here("tables", "height.csv"))
-write_csv(wt.tab, path = here("tables", "weight.csv"))
 
 
 ################################################################################
