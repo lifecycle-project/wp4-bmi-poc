@@ -71,19 +71,18 @@ ref_tab <- cohort_ns %>%
 ################################################################################
 # Table S3: Ns for complete cases  
 ################################################################################
-miss_descriptives$categorical %>%
+cc.tab <- miss_descriptives$categorical %>%
   mutate(variable = str_remove(variable, "_m_fact")) %>%
   separate(variable, sep = "\\.", into = c("variable", "age")) %>%
-  filter(cohort == "combined" & category != "missing") %>%
-  mutate(n_perc = paste0(value, " (", perc_valid, ")"))
+  filter(cohort == "combined" & category == "1") %>%
+  mutate(n_perc = paste0(value, " (", perc_valid, ")")) %>%
+  select(variable, age, category, n_perc) %>%
+  pivot_wider(names_from = "category", values_from = "n_perc") %>%
+  arrange(variable, age)
 
-  
+write.csv(cc.tab, here("tables", "complete_cases.csv"))  
 
-select(variable, age)
-           
-           as.character(variable)) %>%
-  str_remove(string = variable, pattern = "_m_fact")
-  
+
 
 
 
