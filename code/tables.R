@@ -20,8 +20,6 @@ library(ggplot2)
 library(dsHelper)
 library(here)
 library(readr)
-library(gtable)
-library(gridExtra)
 
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
@@ -102,7 +100,7 @@ f_sample.desc <- makeSampleComp(descriptives_full) %>% mutate(sample = "full")
 
 sample_comp <- bind_rows(a_sample.desc, f_sample.desc)
   
-write.csv(sample_comp, here("tables", "sample-comparison.csv"))
+write_csv(sample_comp, here("tables", "sample-comparison.csv"))
 
 
 ################################################################################
@@ -117,7 +115,7 @@ cc.tab <- miss_descriptives$categorical %>%
   pivot_wider(names_from = "category", values_from = "n_perc") %>%
   arrange(variable, age)
 
-write.csv(cc.tab, here("tables", "complete_cases.csv"))  
+write_csv(cc.tab, here("tables", "complete_cases.csv"))  
 
 
 ################################################################################
@@ -125,17 +123,15 @@ write.csv(cc.tab, here("tables", "complete_cases.csv"))
 ################################################################################
 outcomes.tab <- descriptives$continuous %>%
   filter(variable %in% c("bmi.730", "bmi.1461", "bmi.2922", "bmi.5113", 
-                         "bmi.6544", "age_months.24", "age_months.48", 
-                         "age_months.96", "age_months.168", "age_months.215")) %>%
+                         "bmi.6544")) %>%
   mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
   select(cohort, variable, med_range, valid_n) %>%
   pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
   left_join(., ref_tab, by = "cohort") %>%
-  select(names_neat, valid_n_bmi.730, med_range_age_months.24, med_range_bmi.730, 
-         valid_n_bmi.1461, med_range_age_months.48, med_range_bmi.1461,
-         valid_n_bmi.2922, med_range_age_months.96, med_range_bmi.2922,
-         valid_n_bmi.5113, med_range_age_months.168, med_range_bmi.5113, 
-         valid_n_bmi.6544, med_range_age_months.215, med_range_bmi.6544) %>%
+  select(
+    names_neat, valid_n_bmi.730, med_range_bmi.730, valid_n_bmi.1461, 
+    med_range_bmi.1461, valid_n_bmi.2922, med_range_bmi.2922, valid_n_bmi.5113, 
+    med_range_bmi.5113, valid_n_bmi.6544, med_range_bmi.6544) %>%
   arrange(names_neat)
 
 write_csv(outcomes.tab, path = here("tables", "outcomes.csv"))
@@ -178,7 +174,23 @@ write_csv(wt.tab, path = here("tables", "weight.csv"))
 ################################################################################
 # Table S9: Median age at BMI measurement  
 ################################################################################
+ages.tab <- descriptives$continuous %>%
+  filter(
+    variable %in% c(
+      "age_months.24", "age_months.48", "age_months.96", "age_months.168",
+      "age_months.215")) %>%
+  mutate(med_range = paste0(perc_50, " (", perc_5, ", ", perc_95, ")")) %>%
+  select(cohort, variable, med_range, valid_n) %>%
+  pivot_wider(names_from = variable, values_from = c(med_range, valid_n)) %>%
+  left_join(., ref_tab, by = "cohort") %>%
+  select(names_neat, valid_n_age_months.24,  med_range_age_months.24, 
+         valid_n_age_months.48,  med_range_age_months.48, valid_n_age_months.96,  
+         med_range_age_months.96, valid_n_age_months.168,  
+         med_range_age_months.168, valid_n_age_months.215, 
+         med_range_age_months.215) %>%
+  arrange(names_neat) 
 
+write_csv(ages.tab, path = here("tables", "measurement_ages.csv"))
 
 ################################################################################
 # Table S10: Covariate descriptive statistics  
@@ -186,7 +198,7 @@ write_csv(wt.tab, path = here("tables", "weight.csv"))
 cov_cat.tab <- descriptives$categorical %>%
   filter(variable %in% c("sex", "parity_bin", "preg_smk", "preg_ht", 
                          "ethn3_m")) %>%
-  mutate(n_perc = paste0(value, " (", perc_valid, ")")) %>%
+  mutate(n_perc = paste0(value, " (", perc_total, ")")) %>%
   select(cohort, variable, category, n_perc) %>% 
   pivot_wider(
     names_from = c(variable, category),  
@@ -208,8 +220,6 @@ cov.tab <- bind_cols(cov_cat.tab, select(cov_cont.tab, -cohort)) %>%
   arrange(names_neat) 
 
 write_csv(cov.tab, path = here("tables", "covariates.csv"))
-
-
 
 
 
@@ -256,315 +266,39 @@ ipd_ns.tab <- bind_rows(mat_ed_n, area_dep_n, ndvi_n, preg_dia_n) %>%
 write.csv(ipd_ns.tab)
 
 ################################################################################
-# Prepare plot data  
-################################################################################
-
-## Would probably be better to generalise forestplot function to prepare data
-## for IPD and SLMA.
-
-## ---- IPD plots --------------------------------------------------------------
-mat_ed_ipd.plotdata <- mat_ed.fit[[1]] %>%
-  map(dh.lmTab, type = "ipd", ci_format = "separate", direction = "wide") %>%
-  bind_rows(.id = "age") %>%
-  filter(variable %in% c("edu_m2", "edu_m3")) %>%
-  mutate(
-    exposure = "mat_ed", 
-    variable = 
-      case_when(
-        variable == "edu_m2" ~ "Medium education (ref = high)", 
-        variable == "edu_m3" ~ "Low education (ref = high)")) %>%
-  mutate(
-    variable = factor(
-      variable, 
-      levels = c("Medium education (ref = high)", 
-                 "Low education (ref = high)"),
-      ordered = TRUE), 
-    age = factor(
-      age, 
-      levels = rev(age_orig),
-      labels = rev(age_new),
-      ordered = TRUE)) %>%
-  dplyr::rename(
-    beta = est,
-    ci_5 = lowci,
-    ci_95 = uppci) %>%
-  mutate(beta_si = paste0(beta, " (", ci_5, ", ", ci_95, ")"))
-
-test <- mat_ed_ipd.plotdata %>%
-  ggplot(aes(y = age)) +
-  geom_text(aes(x = 2, label = age), size = 7*0.3571429) +
-  geom_text(aes(x = 3, label = beta_si), size = 7*0.3571429) +
-  scale_colour_identity() +
-  facet_wrap(~variable, ncol = 1) +
-  xlab("") +
-  theme_f2 +
-  scale_x_continuous(limits = c(1.5, 3.5)) +
-  theme(
-    axis.line = element_blank(),
-    axis.text.x = element_text(colour = "white"),
-    axis.text.y = element_blank(),
-    axis.title.y = element_blank())
-
-
-test_2 <- mat_ed_ipd.plotdata %>%
-  ggplot(aes(x = age, y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_hline(yintercept = 0, linetype = 2) + 
-  geom_point(size = 1) +
-  geom_errorbar(
-    size = 0.5, 
-    width = 0.05) +
-  xlab('') + 
-  ylab("Difference in childhood BMI by category of maternal education") +
-  facet_wrap(~variable, ncol = 1, scales = "fixed", strip.position = "top") + 
-  theme_f2 +
-  coord_flip() +
-  scale_y_continuous(
-    limits = c(-1, 2),
-    breaks = seq(-1, 1, 1),
-    expand = c(0, 0)) +
-  theme(
-    axis.line = element_line(),
-    axis.text.y = element_blank(), 
-    strip.text.x = element_text(colour = "white"), 
-    strip.background = element_rect("white"))
-
-grid.arrange(test, test_2, ncol = 2)
-
-# Ns on plot
-# squares rather than blobs
-# estimates and confidence intervals
-# weights
-# heterogeneity
-
-## ---- Create plot data -------------------------------------------------------
-mat_ed.pdata <- list(mat_ed.fit[[2]], mat_ed.mod) %>% 
-  pmap(dh.forestData) %>%
-  bind_rows(.id = "age") %>%
-  mutate(exposure = "mat_ed")
-
-mat_ed.pdata %>% print(n = Inf)
-
-area_dep.pdata <- list(area_dep.fit[[2]], area_dep.mod) %>% 
-  pmap(dh.forestData) %>%
-  bind_rows(.id = "age") %>%
-  mutate(exposure = "area_dep")
-  
-ndvi.pdata <- list(ndvi.fit[[2]], ndvi.mod) %>% 
-  pmap(dh.forestData) %>%
-  bind_rows(.id = "age") %>%
-  mutate(exposure = "ndvi")
-
-preg_dia.pdata <- list(preg_dia.fit[[2]], preg_dia.mod) %>% 
-  pmap(dh.forestData) %>%
-  bind_rows(.id = "age") %>%
-  mutate(exposure = "preg_dia")
-  
-slma.pdata <- bind_rows(mat_ed.pdata, area_dep.pdata, ndvi.pdata, preg_dia.pdata) %>%
-  left_join(., ref_tab, by = "cohort") %>%
-  select(-cohort) %>%
-  mutate(
-    age = factor(age, levels = c("bmi_24", "bmi_48", "bmi_96", "bmi_168", "bmi_215"),
-                 labels = c("Age 0-24", "Age 25-48", "Age 49-96", "Age 97-168", 
-                            "Age 169-215")),
-    Cohort = factor(cohort_neat, levels = rev(unique(cohort_neat)), ordered = TRUE))
-
-################################################################################
-# Figure 2: Forest plots  
-################################################################################
-
-age_orig <- c("bmi_24", "bmi_48", "bmi_96", "bmi_168", "bmi_215")
-age_new <- c("0-24 months", "25-48 months", "49-96 months", "97-168 months", 
-             "169-215 months")
-
-## ---- Prepare data -----------------------------------------------------------
-mat_ed_ipd <- mat_ed.fit[[1]] %>%
-  map(dh.lmTab, type = "ipd", ci_format = "separate") %>%
-  bind_rows(.id = "age") %>%
-  filter(variable %in% c("edu_m2", "edu_m3")) %>%
-  mutate(
-    type = "IPD", 
-    cohort = "combined", 
-    exposure = "mat_ed") %>%
-  dplyr::rename(
-    beta = est,
-    ci_5 = lower,
-    ci_95 = upper)
-
-mat_ed_slma <- mat_ed.pdata %>% mutate(type = "SLMA")
-
-mat_ed_comb <- bind_rows(mat_ed_ipd, mat_ed_slma) %>% select(-se)
-
-mat_ed_comb.pdata <- mat_ed_comb %>% 
-  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3") & cohort == "combined") %>%
-  mutate(  
-    variable = case_when(
-      variable == "edu_m2" ~ "Medium education (ref = high)", 
-      variable == "edu_m3" ~ "Low education (ref = high)"),
-    variable = factor(
-      variable, 
-      levels = c("Medium education (ref = high)", 
-                 "Low education (ref = high)"),
-      ordered = TRUE), 
-    age = factor(
-      age, 
-      levels = rev(age_orig),
-      labels = rev(age_new),
-      ordered = TRUE)
-  )
-
-
-################################################################################
-# Figure S1: maternal education SLMA
-################################################################################
-source('~/useful-code-r/code/themes/forest-theme.R')
-palette_n <- c("#ff2600", rep("#005690", 10))
-
-## ---- Prepare data -----------------------------------------------------------
-mat_ed.pdata <- slma.pdata %>% 
-  filter(exposure == "mat_ed" & variable %in% c("edu_m2", "edu_m3")) %>%
-  mutate(  
-    variable = case_when(
-      variable == "edu_m2" ~ "Medium education (ref = high)", 
-      variable == "edu_m3" ~ "Low education (ref = high)"),
-    variable = factor(
-      variable, 
-      levels = c("Medium education (ref = high)", 
-                 "Low education (ref = high)"),
-      ordered = TRUE)
-  )
-
-## ---- Plot -------------------------------------------------------------------
-mat_ed.plot <- ggplot(data = mat_ed.pdata, aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = Cohort), size = 0.15) +
-  geom_hline(aes(fill=Cohort),yintercept =0, linetype=2) + 
-  xlab('Cohort')+ 
-  ylab("Difference in childhood BMI by category of maternal education") +
-  facet_grid(age ~ variable, scales = "fixed", switch = "y") + 
-  forest_theme +
-  coord_flip() +
-  scale_colour_manual(values = palette_n) +
-  theme(
-    axis.text.y = element_text(
-      family="ArialMT", 
-      size=6, 
-      margin = margin(t = 0, r=4, b=0, l=0), 
-      colour="black")
-  )
-
-## ---- Save plot --------------------------------------------------------------
-ggsave(
-  filename="./figures/mat_ed.png", 
-  plot = mat_ed.plot,
-  h = 25, w = 15.92, units="cm", dpi=1200,
-  device="png")
-
-
-################################################################################
-# Figure S2: Area deprivation SLMA  
-################################################################################
-
-## ---- Prepare data -----------------------------------------------------------
-area_dep.pdata <- slma.pdata %>% 
-  filter(exposure == "area_dep" & variable %in% c("area_dep2", "area_dep3")) %>%
-  mutate(
-    variable = factor(variable, levels = c("area_dep2", "area_dep3"),
-                      labels = c("Medium deprivation (ref = low)", 
-                                 "High deprivation (ref = low)")))
-
-## ---- Plot -------------------------------------------------------------------
-area_dep.plot <- ggplot(data = area_dep.pdata,
-                    aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = Cohort), size = 0.3) +
-  geom_hline(aes(fill=Cohort),yintercept =0, linetype=2) + 
-  xlab('Cohort')+ 
-  ylab("Difference in childhood BMI by category of area deprivation") +
-  facet_grid(age ~ variable, scales = "fixed", switch = "y") + 
-  forest_theme +
-  coord_flip() +
-  ylim(-2, 2) +
-  scale_colour_manual(values = palette_n)
-
-## ---- Save plot --------------------------------------------------------------
-ggsave(
-  filename="./figures/area_dep.png", 
-  plot = area_dep.plot, 
-  h = 12, w = 15.92, units="cm", dpi=1200,
-  device="png")
-
-
-################################################################################
-# Figure S3: NDVI  
-################################################################################
-
-## ---- Prepare data -----------------------------------------------------------
-ndvi.pdata <- slma.pdata %>% filter(exposure == "ndvi" & variable == "ndvi") 
-
-## ---- Plot -------------------------------------------------------------------
-ndvi.plot <- ggplot(data = ndvi.pdata,
-       aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = Cohort), size = 0.3) +
-  geom_hline(aes(fill=Cohort),yintercept =0, linetype=2) + 
-  xlab('Cohort')+ 
-  ylab("Difference in childhood BMI by unit change in NDVI") +
-  facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  forest_theme +
-  coord_flip() +
-  ylim(-6, 4) +
-  scale_colour_manual(values = palette_n)
-
-## ---- Save plot --------------------------------------------------------------
-ggsave(
-  filename="./figures/ndvi.png", 
-  plot = ndvi.plot, 
-  h = 12, w = 15.92, units="cm", dpi=1200,
-  device="png")
-
-
-################################################################################
-# Figure S4: Gestational diabetes  
-################################################################################
-
-## ---- Prepare data -----------------------------------------------------------
-preg_dia.pdata <- slma.pdata %>% 
-  filter(variable == "preg_dia1" & exposure == "preg_dia")
-  
-## ---- Plot -------------------------------------------------------------------
-preg_dia.plot <- ggplot(data = preg_dia.pdata,
-       aes(x = Cohort,y = beta, ymin = ci_5, ymax = ci_95)) +
-  geom_pointrange(aes(colour = Cohort), size = 0.2) +
-  geom_hline(aes(fill=Cohort),yintercept =0, linetype=2) + 
-  xlab('Cohort')+ 
-  ylab("Difference in chilhood BMI where gestational diabetes present") +
-  facet_wrap(~age, strip.position = "left", nrow = 4) + 
-  forest_theme +
-  coord_flip() +
-  ylim(-1, 2) +
-  scale_colour_manual(values = palette_n)
-
-## ---- Save plot --------------------------------------------------------------
-ggsave(
-  filename="./figures/preg_dia.png", 
-  plot = preg_dia.plot, 
-  h = 20, w = 15.92, units="cm", dpi=1200,
-  device="png")
-
-################################################################################
 # SENSITIVITY ANALYSES
 ################################################################################
 ################################################################################
 # Sex interactions
 ################################################################################
-mat_ed_int.tab <- mat_ed_int.fit[[1]] %>% 
-  map(dh.glmTab, type = "ipd")
+mat_ed_int.tab <- mat_ed_int.fit$ipd %>% 
+  map(dh.lmTab, type = "ipd", direction = "wide", ci_format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable %in% c("edu_m2:sex2", "edu_m3:sex2"))
 
-area_dep_int.tab <- area_dep_int.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd")
+area_dep_int.tab <- area_dep_int.fit$ipd %>% 
+  map(dh.lmTab, type = "ipd", direction = "wide", ci_format = "separate", round_digits = 3) %>%
+  bind_rows(.id = "age") %>%
+  filter(variable %in% c("area_dep2:sex2", "area_dep3:sex2"))
 
-ndvi_int.tab <- ndvi_int.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd")
+ndvi_int.tab <- ndvi_int.fit$ipd %>% 
+  map(dh.lmTab, type = "ipd", direction = "wide", ci_format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable == "ndvi:sex2")
 
-preg_dia_int.tab <- preg_dia_int.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd")
+preg_dia_int.tab <- preg_dia_int.fit$ipd %>% 
+  map(dh.lmTab, type = "ipd", direction = "wide", ci_format = "separate") %>%
+  bind_rows(.id = "age") %>%
+  filter(variable == "preg_dia1:sex2")
+
+interactions.tab <- list(
+  mat_ed_int.tab, area_dep_int.tab, ndvi_int.tab, preg_dia_int.tab) %>%
+  bind_rows
+
+write_csv(
+  x = interactions.tab,
+  path = here("tables", "interactions.csv")
+)
 
 ################################################################################
 # Removeing DNBC and MoBa  

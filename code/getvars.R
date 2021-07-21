@@ -798,6 +798,36 @@ datashield.workspace_save(conns, "bmi_poc_sec_10")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_10")
 
 ################################################################################
+# 11. Fix pregnancy diabetes variable
+################################################################################
+ds.asFactor(
+  input.var.name = "bmi_poc$preg_dia", 
+  newobj.name = "preg_dia"
+)
+
+dh.dropCols(
+  df = "bmi_poc", 
+  vars = "preg_dia", 
+  type = "remove", 
+  comp_var = "child_id",
+  new_df_name = "bmi_poc"
+)
+
+ds.cbind(
+  x = c("bmi_poc", "preg_dia"), 
+  newobj = "bmi_poc"
+)
+
+dh.getStats(
+  df = "bmi_poc", 
+  vars = "preg_dia"
+)
+
+## ---- Check that this has worked ok ------------------------------------------
+datashield.workspace_save(conns, "bmi_poc_sec_11")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
+
+################################################################################
 # 10. Create analysis dataset  
 ################################################################################
 
@@ -878,46 +908,16 @@ var_index %>%
       datasources = conns[.y]))
 
 ## ---- Check that this has worked ok ------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_11")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
+datashield.workspace_save(conns, "bmi_poc_sec_12")
 
 ################################################################################
 # 11. Additional fixes  
 ################################################################################
-ds.asFactor(
-  input.var.name = "analysis_df$preg_dia", 
-  newobj.name = "preg_dia"
-)
 
-dh.dropCols(
-  df = "analysis_df", 
-  vars = "preg_dia", 
-  type = "remove", 
-  comp_var = "child_id",
-  new_df_name = "analysis_df"
-)
 
-ds.cbind(
-  x = c("analysis_df", "preg_dia"), 
-  newobj = "analysis_df"
-)
 
-dh.getStats(
-  df = "analysis_df", 
-  vars = "preg_dia"
-)
 
-## ---- Check that this has worked ok ------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_12")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
-#dh.tidyEnv(obj = "analysis_df", type = "keep", conns = conns)
 
-#datashield.workspace_save(opals, "bmi_poc_sec_10_clean")
 
-#dh.tidyEnv(obj = c("analysis_df", "greenyn300_preg_rev_num_yn", 
-#                   "green_dist_preg_num_yn", "greenyn300_preg_rev_num", 
-#                   "areases_tert_preg_rev", "areases_quint_preg_rev"),
-#                   type = "keep")
 
-#datashield.workspace_save(opals, "bmi_poc_sec_10_clean")
