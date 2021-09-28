@@ -74,9 +74,9 @@ cohorts_tables <- bind_rows(
   tibble(
     cohort = "dnbc",
     table = c(
-      "lc_dnbc_core_2_1.2_1_core_non_rep_tcadman_2020-lc19",
-      "lc_dnbc_core_2_1.2_1_core_monthly_rep_tcadman_2020-lc19",
-      "lc_dnbc_core_2_1.2_1_core_yearly_rep_tcadman_2020-lc19")), 
+      "lc_dnbc_core_2_2.2_2_core_non_rep_tcadman_2020-lc19",
+      "lc_dnbc_core_2_2.2_2_core_monthly_rep_tcadman_2020-lc19",
+      "lc_dnbc_core_2_2.2_2_core_yearly_rep_tcadman_2020-lc19")), 
   tibble(
     cohort = "eden",
     table = c(
@@ -120,6 +120,12 @@ cohorts_tables <- bind_rows(
       "lc_moba_core_2_0.2_0_core_monthly_rep_bmi_poc_study",
       "lc_moba_core_2_0.2_0_core_yearly_rep_bmi_poc_study")), 
   tibble(
+    cohort = "nfbc66",
+    table = c(
+      "p0650nfbc66/2_2_core_1_0/non_rep", 
+      "p0650nfbc66/2_2_core_1_0/monthly_rep", 
+      "p0650nfbc66/2_2_core_1_0/yearly_rep")),
+  tibble(
     cohort = "nfbc86",
     table = c(
       "p0650/2_2_core_1_0/non_rep", 
@@ -138,16 +144,21 @@ cohorts_tables <- bind_rows(
       "lc_raine_core_2_1.2_1_core_1_0_monthly_rep",
       "lc_raine_core_2_1.2_1_core_1_0_yearly_rep")),
   tibble(
+    cohort = "rhea",
+    table = c(
+      "lc_rhea_core_2_1.tcadman_nr",
+      "lc_rhea_core_2_1.tcadman_m",
+      "lc_rhea_core_2_1.tcadman_y")),
+  tibble(
     cohort = "sws",
     table = c(
       "lc_sws_core_2_1.2_1_core_1_1_non_rep", 
       "lc_sws_core_2_1.2_1_core_1_1_monthly_rep", 
       "lc_sws_core_2_1.2_1_core_1_1_yearly_rep"))) %>%
-  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 15))
+  mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 17))
          
 ## ---- Assign tables ----------------------------------------------------------
 cohorts_tables %>%
-  filter(!cohort %in% c("eden", "elfe")) %>%
   pwalk(function(cohort, table, type){
   
   datashield.assign(
