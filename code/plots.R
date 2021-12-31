@@ -649,8 +649,12 @@ slmaN <- function(x){
   n_study <- paste0("study", 1:dim(x$betamatrix.valid)[2])
   
   out <- n_study %>% map_int(function(y){x$output.summary[[y]][["Nvalid"]]})
-  out <- c(out, sum(out))}
+  out <- c(out, sum(out))
+  
+  return(out)
+  }
 
+x <- single.fit$slma$ndvi
 ################################################################################
 # Figure S3a & S3b: Maternal education SLMA
 ################################################################################
