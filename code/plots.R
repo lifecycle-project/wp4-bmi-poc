@@ -402,7 +402,7 @@ forest(
   ilab =  cbind(
     rep(mat_ed.fit[[1]] %>% map_int(function(x){x$Nvalid}), 2),
     mat_ed.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -414,8 +414,8 @@ forest(
   digits = c(2, 2), 
   rows = c(8, 6.5, 5, 3.5, 2, 18.5, 17, 15.5, 14, 12.5))
 
-text(-2, 23, "N", cex = 0.8, font = 2)
-text(-1.5, 23, "K", cex = 0.8, font = 2)
+text(-2, 23, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 23, "N studies", cex = 0.8, font = 2)
 
 text(-2.92, 20.3, "Medium education", cex = 0.8, font = 2)
 text(-3.02, 9.8, "Low education", cex = 0.8, font = 2)
@@ -442,7 +442,7 @@ forest(
   ilab =  cbind(
     rep(area_dep.fit[[1]] %>% map_int(function(x){x$Nvalid}), 2),
     area_dep.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -454,8 +454,8 @@ forest(
   digits = c(2, 2), 
   rows = c(8, 6.5, 5, 3.5, 17, 15.5, 14, 12.5))
 
-text(-2, 21, "N", cex = 0.8, font = 2)
-text(-1.5, 21, "K", cex = 0.8, font = 2)
+text(-2, 21, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 21, "N studies", cex = 0.8, font = 2)
 
 text(-2.88, 18.5, "Medium deprivation", cex = 0.8, font = 2)
 text(-2.96, 9.5, "High deprivation", cex = 0.8, font = 2)
@@ -481,7 +481,7 @@ forest(
   ilab =  cbind(
     ndvi.fit[[1]] %>% map_int(function(x){x$Nvalid}),
     ndvi.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -493,9 +493,8 @@ forest(
   digits = c(2, 2), 
   rows = c(17, 16, 15, 14))
 
-text(-2.5, 19, "N", cex = 0.8, font = 2)
-text(-2, 19, "K", cex = 0.8, font = 2)
-
+text(-2.5, 19, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 19, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 
@@ -518,7 +517,7 @@ forest(
   ilab =  cbind(
     preg_dia.fit[[1]] %>% map_int(function(x){x$Nvalid}),
     preg_dia.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -530,8 +529,8 @@ forest(
   digits = c(2, 2), 
   rows = c(17, 16, 15, 14))
 
-text(-2.5, 19, "N", cex = 0.8, font = 2)
-text(-2, 19, "K", cex = 0.8, font = 2)
+text(-2.5, 19, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 19, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 
@@ -543,7 +542,7 @@ dev.off()
 ################################################################################
 
 ## ---- Function ---------------------------------------------------------------
-forestData <- function(obj, mod){
+forestDataSLMA <- function(obj, mod){
   
   ## By study
   betas <- as_tibble(t(obj$betamatrix.valid)) %>%
@@ -700,7 +699,7 @@ forest(
     rep("black", 3), "#800000"))
   
 
-text(-2, 72, "N", cex = 0.6, font = 2)
+text(-2, 72, "N subjects", cex = 0.6, font = 2)
 
 text(-3.08, 69.5, "0-24 months", cex = 0.6, font = 2)
 text(-3.05, 52.5, "24-48 months", cex = 0.6, font = 2)
@@ -751,7 +750,7 @@ forest(
     rep("black", 3), "#800000"))
 
 
-text(-2, 72, "N", cex = 0.6, font = 2)
+text(-2, 72, "N subjects", cex = 0.6, font = 2)
 
 text(-3.04, 69.5, "0-24 months", cex = 0.6, font = 2)
 text(-3.01, 52.5, "24-48 months", cex = 0.6, font = 2)
@@ -806,7 +805,7 @@ forest(
   col = rep(
     c(rep("black", 5), "#800000"), 4))
 
-text(-2, 33, "N", cex = 0.6, font = 2)
+text(-2, 33, "N subjects", cex = 0.6, font = 2)
 
 
 text(-3.08, 31, "0-24 months", cex = 0.6, font = 2)
@@ -852,7 +851,7 @@ forest(
     c(rep("black", 5), "#800000"), 4))
 
 
-text(-2, 72, "N", cex = 0.6, font = 2)
+text(-2, 33, "N subjects", cex = 0.6, font = 2)
 
 text(-3.08, 31, "0-24 months", cex = 0.6, font = 2)
 text(-3.04, 23, "24-48 months", cex = 0.6, font = 2)
@@ -860,7 +859,6 @@ text(-3.04, 15, "49-96 months", cex = 0.6, font = 2)
 text(-3.02, 7, "97-168 months", cex = 0.6, font = 2)
 
 dev.off()
-
 
 ################################################################################
 # Figure S5: NDVI SLMA  
@@ -897,7 +895,7 @@ forest(
     c(rep("black", 5), "#800000"), 4))
 
 
-text(-7.5, 33, "N", cex = 0.6, font = 2)
+text(-7.5, 33, "N subjects", cex = 0.6, font = 2)
 
 text(-10.65, 31, "24-48 months", cex = 0.6, font = 2)
 text(-10.65, 23, "49-96 months", cex = 0.6, font = 2)
@@ -948,7 +946,7 @@ forest(
     rep("black", 10), "#800000"))
 
 
-text(-4, 63, "N", cex = 0.6, font = 2)
+text(-4, 63, "N subjects", cex = 0.6, font = 2)
 
 text(-5.31, 60.5, "0-24 months", cex = 0.6, font = 2)
 text(-5.26, 46.5, "24-48 months", cex = 0.6, font = 2)
@@ -1112,21 +1110,21 @@ forest(
       rep(mat_ed_m.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}), 2),
       rep(mat_ed_f.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}), 2)))
   ),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3),
   ylim = c(1, 27),
-  alim = c(-1, 1.5), 
+  alim = c(-1, 1.2), 
   steps = 6, 
   digits = c(2, 2), 
   rows = c(22:13, 10:1),
   col = rep(c("#F4A261", "#264653"), 10))
 
-text(-2, 26, "N", cex = 0.8, font = 2)
-text(-1.5, 26, "K", cex = 0.8, font = 2)
+text(-2, 26, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 26, "N studies", cex = 0.8, font = 2)
 
 text(-2.87, 23.5, "Medium education", cex = 0.8, font = 2)
 text(-2.98, 11.5, "Low education", cex = 0.8, font = 2)
@@ -1162,7 +1160,7 @@ forest(
         rep(area_dep_m.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}), 2),
         rep(area_dep_f.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}), 2)))
   ),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1175,8 +1173,8 @@ forest(
   rows = c(18:11, 8:1),
   col = rep(c("#F4A261", "#264653"), 8))
 
-text(-2, 21, "N", cex = 0.8, font = 2)
-text(-1.5, 21, "K", cex = 0.8, font = 2)
+text(-2, 21, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 21, "N studies", cex = 0.8, font = 2)
 
 text(-2.87, 9.2, "Medium education", cex = 0.8, font = 2)
 text(-2.98, 19.2, "Low education", cex = 0.8, font = 2)
@@ -1212,7 +1210,7 @@ forest(
         area_dep_m.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}),
         area_dep_f.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})))
   ),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1225,8 +1223,8 @@ forest(
   rows = 8:1,
   col = rep(c("#F4A261", "#264653"), 4))
 
-text(-2.5, 10, "N", cex = 0.8, font = 2)
-text(-2, 10, "K", cex = 0.8, font = 2)
+text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 10, "N studies", cex = 0.8, font = 2)
 
 
 dev.off()
@@ -1261,7 +1259,7 @@ forest(
         area_dep_m.fit[[1]] %>% map(function(x){length(x$disclosure.risk)}),
         area_dep_f.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})))
   ),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1274,8 +1272,8 @@ forest(
   rows = 8:1,
   col = rep(c("#F4A261", "#264653"), 4))
 
-text(-2.5, 10, "N", cex = 0.8, font = 2)
-text(-2, 10, "K", cex = 0.8, font = 2)
+text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 10, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 
@@ -1390,7 +1388,7 @@ forest(
         rep(mat_ed_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2),
         rep(mat_ed.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2)))
   ),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1403,8 +1401,8 @@ forest(
   rows = c(22:13, 10:1),
   col = rep(c("#264653", "#F4A261"), 10))
 
-text(-2, 26, "N", cex = 0.8, font = 2)
-text(-1.5, 26, "K", cex = 0.8, font = 2)
+text(-2, 26, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 26, "N studies", cex = 0.8, font = 2)
 
 text(-2.87, 23.5, "Medium education", cex = 0.8, font = 2)
 text(-2.98, 11.5, "Low education", cex = 0.8, font = 2)
@@ -1440,21 +1438,21 @@ forest(
         rep(area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2),
         rep(area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2)))
   ),
-  ilab.xpos = c(-2, -1.5),
+  ilab.xpos = c(-2, -1.2),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3),
   ylim = c(1, 22),
-  alim = c(-1, 1.5), 
+  alim = c(-1, 1.2), 
   steps = 6, 
   digits = c(2, 2), 
   rows = c(18:11, 8:1),
   col = rep(c("#264653", "#F4A261"), 8))
 
-text(-2, 21, "N", cex = 0.8, font = 2)
-text(-1.5, 21, "K", cex = 0.8, font = 2)
+text(-2, 21, "N subjects", cex = 0.8, font = 2)
+text(-1.2, 21, "N studies", cex = 0.8, font = 2)
 
 text(-2.87, 9.2, "Medium education", cex = 0.8, font = 2)
 text(-2.98, 19.2, "Low education", cex = 0.8, font = 2)
@@ -1490,7 +1488,7 @@ forest(
         area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}),
         area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)})))
   ),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1503,9 +1501,8 @@ forest(
   rows = 8:1,
   col = rep(c("#264653", "#F4A261"), 4))
 
-text(-2.5, 10, "N", cex = 0.8, font = 2)
-text(-2, 10, "K", cex = 0.8, font = 2)
-
+text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 10, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 
@@ -1538,7 +1535,7 @@ forest(
         area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}),
         area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)})))
   ),
-  ilab.xpos = c(-2.5, -2),
+  ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
@@ -1551,8 +1548,8 @@ forest(
   rows = 8:1,
   col = rep(c("#264653", "#F4A261"), 4))
 
-text(-2.5, 10, "N", cex = 0.8, font = 2)
-text(-2, 10, "K", cex = 0.8, font = 2)
+text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
+text(-1.7, 10, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 

@@ -155,22 +155,22 @@ area_dep.mod <- list(
   bmi_24 = list(
     outcome = "bmi.730",
     exposure = "area_dep",
-    covariates = c("age_days.730", "sex"),
+    covariates = c("age_days.730", "sex", "edu_m"),
     cohorts = env_coh), 
   bmi_48 = list(
     outcome = "bmi.1461",
     exposure = "area_dep",
-    covariates = c("age_days.1461", "sex"),
+    covariates = c("age_days.1461", "sex", "edu_m"),
     cohorts = env_coh),
   bmi_96 = list(
     outcome = "bmi.2922",
     exposure = "area_dep", 
-    covariates = c("age_days.2922", "sex"),
+    covariates = c("age_days.2922", "sex", "edu_m"),
     cohorts = env_coh),
   bmi_168 = list(
     outcome = "bmi.5113",
     exposure = "area_dep", 
-    covariates = c("age_days.5113", "sex"),
+    covariates = c("age_days.5113", "sex", "edu_m"),
     cohorts = env_coh)
 )
 
@@ -371,6 +371,7 @@ preg_dia.fit <- list(
 save.image()
 
 
+
 ################################################################################
 # 7. Results stratified by sex  
 ################################################################################
@@ -429,11 +430,20 @@ mat_ed_m.fit <- list(
     map(dh.glmWrap, type = "slma", data = "analysis_df_m")
 )
 
+area_dep_sex_m.mod <- c(
+  area_dep_sex.mod[1],
+  area_dep_sex.mod[2] %>%
+    dh.changeForm(
+      var = "ninfea",
+      category = "cohorts", 
+      type = "remove"),
+  area_dep_sex.mod[3:4])
+
 area_dep_m.fit <- list(
-  ipd = area_dep_sex.mod %>% 
+  ipd = area_dep_sex_m.mod %>% 
     map(dh.makeGlmForm, type = "ipd") %>% 
     map(dh.glmWrap, type = "ipd", data = "analysis_df_m"), 
-  slma = area_dep_sex.mod %>% 
+  slma = area_dep_sex_m.mod %>% 
     map(dh.makeGlmForm, type = "slma") %>% 
     map(dh.glmWrap, type = "slma", data = "analysis_df_m")
 )
@@ -482,10 +492,10 @@ mat_ed_f.fit <- list(
 )
 
 area_dep_f.fit <- list(
-  ipd = area_dep_sex.mod %>% 
+  ipd = area_dep_sex_m.mod %>% 
     map(dh.makeGlmForm, type = "ipd") %>% 
     map(dh.glmWrap, type = "ipd", data = "analysis_df_f"), 
-  slma = area_dep_sex.mod %>% 
+  slma = area_dep_sex_m.mod %>% 
     map(dh.makeGlmForm, type = "slma") %>% 
     map(dh.glmWrap, type = "slma", data = "analysis_df_f")
 )
