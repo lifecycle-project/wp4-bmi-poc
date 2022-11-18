@@ -15,7 +15,7 @@ library(magrittr)
 library(tidyr)
 library(stringr)
 library(remotes)
-install_github("lifecycle-project/ds-helper", ref = "new-function")
+install_github("lifecycle-project/ds-helper")
 library(dsHelper)
 
 #datashield.workspaces(opals)
@@ -54,6 +54,12 @@ yearrep.vars <- c(
 ## ---- Make tibble of details for each cohort ---------------------------------
 cohorts_tables <- bind_rows(
   tibble(
+    cohort = "abcd",
+    table = c(
+      "adiposity/2_3_core_2_3/core_non_rep",
+      "adiposity/2_3_core_2_3/core_monthly_rep",
+      "adiposity/2_3_core_2_3/core_yearly_rep")),
+  tibble(
     cohort = "alspac",
     table = c(
       "alspac/2_1_core_1_3/non_rep",
@@ -62,15 +68,15 @@ cohorts_tables <- bind_rows(
   tibble(
     cohort = "bib",
     table = c(
-      "sp435/2_1_core_1_1/non_rep",
-      "sp435/2_1_core_1_1/monthly_rep",
-      "sp435/2_1_core_1_1/yearly_rep")),
+      "sp435/2_2_core_1_5/non_rep",
+      "sp435/2_2_core_1_5/monthly_rep",
+      "sp435/2_2_core_1_5/yearly_rep")),
   tibble(
     cohort = "chop",
     table = c(
-      "lc_chop_core_2_1.2_1_core_non_rep_bmi_earlylife_poc",
-      "lc_chop_core_2_1.2_1_core_monthly_rep_bmi_earlylife_poc",
-      "lc_chop_core_2_1.2_1_core_yearly_rep_bmi_earlylife_poc")),
+      "bmi-earlylife-poc/2_2_core_1_0/non_rep",
+      "bmi-earlylife-poc/2_2_core_1_0/monthly_rep",
+      "bmi-earlylife-poc/2_2_core_1_0/yearly_rep")),
   tibble(
     cohort = "dnbc",
     table = c(
@@ -157,6 +163,8 @@ cohorts_tables <- bind_rows(
       "lc_sws_core_2_1.2_1_core_1_1_yearly_rep"))) %>%
   mutate(type = rep(c("nonrep", "monthrep", "yearrep"), 17))
 
+arm_coh <- c("alspac", "bib", "eden", "elfe", "gecko", "hgs", "nfbc66", "nfbc86")
+
 ## ---- Assign tables ----------------------------------------------------------
 cohorts_tables %>%
   dplyr::filter(cohort %in% c("nfbc66", "nfbc86")) %>%
@@ -169,7 +177,11 @@ cohorts_tables %>%
       variables = eval(parse(text = paste0(type, ".vars"))))
   })
 
-ds.colnames("nonrep", datasources = conns["nfbc86"])
+ds.table("nonrep$preg_dia", datasources = conns["bib"], useNA = "always")
+
+ds.colnames("nonrep")
+ds.colnames("monthrep")
+ds.colnames("yearrep")
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_1")
@@ -307,8 +319,6 @@ ds.dataFrame(
   newobj = "monthrep"
 )
 
-ds.colnames("monthrep")
-
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_4")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_4") 
@@ -349,6 +359,8 @@ cohorts_7 <- "ninfea"
 cohorts_8 <- "raine"
 cohorts_9 <- c("rhea", "sws")
 
+miss_cohorts <- c("inma", "alspac", "abcd")
+
 ## ---- Cohort set 1 -----------------------------------------------------------
 dh.makeStrata(
   df = "monthrep", 
@@ -360,9 +372,9 @@ dh.makeStrata(
   band_action = "ge_l", 
   keep_vars = c("bmi", "height_", "weight_"),
   new_obj = "bmi_strata",
-  conns = conns[cohorts_1])
+  conns = conns[tmp_coh])
 
-datashield.workspace_save(conns[cohorts_1], "bmi_poc_sec_6_a")
+datashield.workspace_save(conns[arm_coh], "bmi_poc_sec_6_a")
 
 ## ---- Cohort set 2 -----------------------------------------------------------
 dh.makeStrata(
@@ -508,15 +520,13 @@ dh.dropCols(
   df = "nonrep", 
   vars = fact_repair %>% dplyr::filter(df == "nonrep") %>% pull(var), 
   new_obj = "nonrep", 
-  type = "remove"
-)
+  type = "remove")
 
 dh.dropCols(
   df = "yearrep", 
-  vars = fact_repair %>% dplyr::(df == "yearrep") %>% pull(var), 
+  vars = fact_repair %>% dplyr::filter(df == "yearrep") %>% pull(var), 
   new_obj = "yearrep", 
-  type = "remove"
-)
+  type = "remove")
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_7a")
@@ -531,7 +541,7 @@ ds.dataFrame(
   x = c("yearrep", fact_repair %>% dplyr::filter(df == "yearrep") %>% pull(var)),
   newobj = "yearrep_fix")
 
-
+ds.colnames("nonrep_fix")
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_7")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_7")
@@ -597,6 +607,8 @@ ds.dataFrame(
 datashield.workspace_save(conns, "bmi_poc_sec_8")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_8")
 
+ds.colnames("nonrep_2")
+
 ################################################################################
 # 12. Create baseline variables from yearly repeated tables
 ################################################################################
@@ -658,6 +670,12 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_9")
 # 13. Create cohort dummy  
 ################################################################################
 
+## ---- Fix cohort_id ----------------------------------------------------------
+dh.columnCast(
+  df = "nonrep", 
+  target_vars =  "cohort_id", 
+  target_class = "factor")
+
 ## ---- Get cohort codes -------------------------------------------------------
 coh_codes <- dh.getStats(
   df = "nonrep",
@@ -671,6 +689,8 @@ codes.tab <- coh_codes$categorical %>%
 coh_dummy <- tibble(
   cohort = paste0(codes.tab$cohort, "_dummy"), 
   value = as.character(codes.tab$category)) 
+
+save.image("15_nov_22")
 
 coh_dummy %>%
   pmap(function(cohort, value){
@@ -698,8 +718,7 @@ ds.merge(
   by.x.names = "child_id",
   by.y.names = "child_id",
   all.x = TRUE,
-  newobj = "bmi_poc"
-)
+  newobj = "bmi_poc")
 
 ## ---- Now merge the BMI data that we've created ------------------------------
 ds.merge(
@@ -708,8 +727,7 @@ ds.merge(
   by.x.names = "child_id",
   by.y.names = "child_id",
   all.x = TRUE,
-  newobj = "bmi_poc"
-)
+  newobj = "bmi_poc")
 
 ## ---- Rename variables -------------------------------------------------------
 ds.dataFrameFill("bmi_poc", "bmi_poc")
@@ -724,8 +742,7 @@ old_new_3 <- tribble(
   "height_age.0_730", "age_days.730",
   "height_age.730_1461", "age_days.1461",
   "height_age.1461_2922", "age_days.2922",
-  "height_age.2922_5113", "age_days.5113",
-  "height_age.5113_6544", "age_days.6544")
+  "height_age.2922_5113", "age_days.5113")
 
 dh.renameVars(
   df = "bmi_poc", 
@@ -765,8 +782,7 @@ ds.dataFrame(
 ## ---- Now add in the cohort dummy variables ----------------------------------
 ds.dataFrame(
   x = c('bmi_poc', coh_dummy$cohort), 
-  newobj = 'bmi_poc'
-)
+  newobj = 'bmi_poc')
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_11")
@@ -775,64 +791,37 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_11")
 ################################################################################
 # 15. Assign additional environmental variables
 ################################################################################
-env.vars <- c("child_id", "ndvi100_preg", "ndvi300_preg", "ndvi500_preg")
-env_coh <- c("alspac", "bib", "dnbc", "eden", "genr", "inma", "moba", "rhea", 
+#env.vars <- c("child_id", "ndvi100_preg", "ndvi300_preg", "ndvi500_preg")
+#env_coh <- c("alspac", "inma", "moba", "rhea", 
              "ninfea")
 
-cohorts_tables %>%
-  dplyr::filter(cohort %in% env_coh & type == "nonrep") %>%
-  pwalk(function(cohort, table, type){
+#cohorts_tables %>%
+#  dplyr::filter(cohort %in% env_coh & type == "nonrep") %>%
+#  pwalk(function(cohort, table, type){
     
-    datashield.assign(
-      conns = conns[cohort], 
-      symbol = "env_vars", 
-      value = table, 
-      variables = env.vars)
-  })
+#    datashield.assign(
+#      conns = conns[cohort], 
+#      symbol = "env_vars", 
+#      value = table, 
+#      variables = env.vars)
+#  })
 
 ## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_12")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
+#datashield.workspace_save(conns, "bmi_poc_sec_12")
+#conns <- datashield.login(logindata, restore = "bmi_poc_sec_12")
 
 ################################################################################
 # 16. Create IQR
 ################################################################################
+env_coh <- c("abcd", "alspac", "bib", "dnbc", "eden", "genr", "inma", "moba", 
+             "rhea", "ninfea")
 
 ## ---- Pooled --------------------------------------------------
 dh.makeIQR(
-  df = "env_vars",
-  vars = "ndvi300_preg",
-  type = "combine",
-  conns = conns[env_coh]
-)
-
-## ---- Cohort-specific --------------------------------------------------
-dh.makeIQR(
-  df = "env_vars",
-  vars = "ndvi300_preg",
-  type = "split",
-  conns = conns[env_coh]
-)
-
-iqr.vars <- c("ndvi300_preg_iqr_c", "ndvi300_preg_iqr_s")
-
-## ---- Merge back in with main dataframe --------------------------------------
-dh.dropCols(
   df = "bmi_poc",
   vars = "ndvi300_preg",
-  type = "remove",
-  conns = conns[env_coh]
-)
-
-ds.merge(
-  x.name = "bmi_poc",
-  y.name = "env_vars",
-  by.x.names = "child_id",
-  by.y.names = "child_id",
-  all.x = TRUE,
-  newobj = "bmi_poc",
-  datasources = conns[env_coh]
-)
+  type = "combine",
+  conns = conns[env_coh])
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_13")
@@ -880,20 +869,17 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_14")
 ################################################################################
 ds.asFactor(
   input.var.name = "bmi_poc$preg_dia", 
-  newobj.name = "preg_dia"
-)
+  newobj.name = "preg_dia")
 
 dh.dropCols(
   df = "bmi_poc", 
   vars = "preg_dia", 
   type = "remove", 
-  new_obj = "bmi_poc"
-)
+  new_obj = "bmi_poc")
 
 ds.cbind(
   x = c("bmi_poc", "preg_dia"), 
-  newobj = "bmi_poc"
-)
+  newobj = "bmi_poc")
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_15")
@@ -956,14 +942,11 @@ ds.Boole(
   newobj = "valid_case")
 
 ## Check how many valid cases to make sure it's plausible
-
 ds.summary("outcome")
 ds.summary("valid_case")
 
 datashield.workspace_save(conns, "bmi_poc_sec_16a")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_16a")
-
-ds.summary("bmi_poc$weight_.5113_6544", datasources = conns["alspac"])
 
 ## ---- Rename height and weight variables -------------------------------------
 ht_wt_names <- tribble(
@@ -971,20 +954,16 @@ ht_wt_names <- tribble(
   "height_.0_730", "ht.730", 
   "height_.730_1461", "ht.1461", 
   "height_.1461_2922", "ht.2922", 
-  "height_.2922_5113", "ht.5113", 
-  "height_.5113_6544", "ht.6544",
+  "height_.2922_5113", "ht.5113",
   "weight_.0_730", "wt.730",
   "weight_.730_1461", "wt.1461", 
   "weight_.1461_2922", "wt.2922", 
-  "weight_.2922_5113", "wt.5113", 
-  "weight_.5113_6544", "wt.6544"
-)
+  "weight_.2922_5113", "wt.5113")
 
 dh.renameVars(
   df = "bmi_poc",
   current_names = ht_wt_names$oldvar,
-  new_names = ht_wt_names$newvar
-)
+  new_names = ht_wt_names$newvar)
 
 ## ---- Save progress ----------------------------------------------------------
 datashield.workspace_save(conns, "bmi_poc_sec_16b")
@@ -1016,9 +995,9 @@ ds.dataFrame(
   newobj = "fix_vars")
 
 ## ---- Ethnicity --------------------------------------------------------------
-ds.asNumeric("fix_vars$ethn3_m", "ethnicity", datasources = conns[eth_coh])
+eth_coh <- c("abcd", "alspac", "bib", "elfe", "gecko", "genr", "inma", "raine")
 
-eth_coh <- c("alspac", "bib", "chop", "elfe", "gecko", "genr", "inma", "raine")
+ds.asNumeric("fix_vars$ethn3_m", "ethnicity", datasources = conns[eth_coh])
 
 ds.recodeValues(
   var.name = "ethnicity",
@@ -1064,29 +1043,28 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_18")
 ################################################################################
 # 21. Fix missing cohort dummy
 ################################################################################
-coh_dummy <- tibble(
-  cohort = paste0(codes.tab$cohort, "_dummy"), 
-  value = as.character(codes.tab$category)) 
+#coh_dummy <- tibble(
+#  cohort = paste0(codes.tab$cohort, "_dummy"), 
+#  value = as.character(codes.tab$category)) 
 
-coh_dummy %>%
-  dplyr::filter(cohort %in% c("hgs_dummy", "sws_dummy")) %>%
-  pmap(function(cohort, value){
-    ds.Boole(
-      V1 = "bmi_poc$cohort_id", 
-      V2 = value,
-      Boolean.operator = "==",
-      numeric.output = TRUE, 
-      na.assign = "NA", 
-      newobj = cohort)
-  })
+#coh_dummy %>%
+#  pmap(function(cohort, value){
+#    ds.Boole(
+#      V1 = "bmi_poc$cohort_id", 
+#      V2 = value,
+#      Boolean.operator = "==",
+#      numeric.output = TRUE, 
+#      na.assign = "NA", 
+#      newobj = cohort)
+#  })
 
-ds.dataFrame(
-  x = c("bmi_poc", "hgs_dummy", "sws_dummy"),
-  newobj = "bmi_poc")
+#ds.dataFrame(
+#  x = c("bmi_poc", paste0(tmp_coh, "_dummy")),
+#  newobj = "bmi_poc")
 
 ## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_19")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_19")
+#datashield.workspace_save(conns, "bmi_poc_sec_19")
+#conns <- datashield.login(logindata, restore = "bmi_poc_sec_19")
 
 ################################################################################
 # 22. Fix BMI for ELFE
@@ -1173,7 +1151,8 @@ dh.makeStrata(
   conns = conns["elfe"])
 
 dh.tidyEnv(
-  obj = c("nonrep", "monthrep", "yearrep", "bmi_poc", "bmi_strata"), 
+  obj = c("nonrep", "monthrep", "yearrep", "bmi_poc", "bmi_strata", 
+          "yearrep_fix"), 
   type = "keep")
 
 ## ---- Save progress ----------------------------------------------------------
@@ -1257,7 +1236,7 @@ ds.merge(
   datasources = conns["elfe"])
 
 dh.tidyEnv(
-  obj = c("nonrep", "monthrep", "yearrep", "bmi_poc", "bmi_strata"), 
+  obj = c("nonrep", "monthrep", "yearrep", "yearrep_fix", "bmi_poc", "bmi_strata"), 
   type = "keep")
 
 ## ---- Save progress ----------------------------------------------------------
@@ -1268,7 +1247,7 @@ conns <- datashield.login(logindata, restore = "bmi_poc_sec_21")
 # 23. Fix maternal education for HGS
 ################################################################################
 dh.makeStrata(
-  df = "yearrep", 
+  df = "yearrep_fix", 
   id_var = "child_id", 
   age_var = "age_years",
   var_to_subset = "edu_m_",
@@ -1387,40 +1366,107 @@ ds.dataFrameSubset(
 datashield.workspace_save(conns, "bmi_poc_sec_25")
 conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
 
+ds.dataFrameFill("analysis_df", "analysis_df")
 
+dh.columnCast(
+  df = "analysis_df", 
+  target_vars = c("age_days.730", "age_days.1461", "age_days.2922", 
+                  "age_days.5113", "age_days.6544"),
+  target_class = "numeric")
 
+dh.columnCast(
+  df = "analysis_df", 
+  target_vars = "ethn3_m",
+  target_class = "factor")
 
+datashield.workspace_save(conns, "bmi_poc_sec_26")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_26")
 
+ds.dataFrameFill("excluded_df", "excluded_df")
 
+dh.columnCast(
+  df = "excluded_df", 
+  target_vars = c("age_days.730", "age_days.1461", "age_days.2922", 
+                  "age_days.5113", "age_days.6544"),
+  target_class = "numeric")
 
+dh.columnCast(
+  df = "excluded_df", 
+  target_vars = "ethn3_m",
+  target_class = "factor")
 
+datashield.workspace_save(conns, "bmi_poc_sec_27")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ################################################################################
-# 21. Clean environment
+# Add in missing dummy variables for 3 cohorts  
 ################################################################################
-dh.tidyEnv(
-  obj = c("analysis_df", "excluded_df", "bmi_poc", "nonrep", "monthrep", 
-          "yearrep"),
-  type = "keep")
+conns <- datashield.login(logindata, restore = "missing_2")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_18")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_18")
+ds.colnames("bmi_poc")
 
+dh.dropCols(
+  df = "bmi_poc", 
+  vars = "abcd_dummy", 
+  conns = conns["chop"], 
+  type = "remove")
 
+dh.dropCols(
+  df = "bmi_poc", 
+  vars = "moba_dummy", 
+  conns = conns["moba"], 
+  type = "remove")
+
+ds.dataFrame(
+  x = c('bmi_poc', coh_dummy$cohort), 
+  newobj = 'bmi_poc', 
+  datasources = conns[c("chop", "moba")])
+
+datashield.workspace_save(conns, "missing_2")
 
 ################################################################################
-# 21. Get missing preg_ht variable for INMA
+# Fix IQR variable in MoBa  
 ################################################################################
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
-## ---- Assign variable for INMA -----------------------------------------------
-datashield.assign(
-  conns = conns["inma"], 
-  symbol = "ht", 
-  value = "lc_isglobal_core_2_1.2_1_core_1_0_non_rep_200217_1_bmi", 
-  variables = c("child_id", "preg_ht")
-)
+dh.dropCols(
+  df = "bmi_poc", 
+  vars = "ndvi300_preg_iqr_c",
+  type = "remove",
+  conns = conns[env_coh[env_coh != "moba"]])
 
-ds.summary("ht$preg_ht", datasources = conns["inma"])
+dh.makeIQR(
+  df = "bmi_poc",
+  vars = "ndvi300_preg",
+  type = "combine",
+  conns = conns[env_coh])
+
+dh.dropCols(
+  df = "analysis_df", 
+  vars = "ndvi300_preg_iqr_c.1",
+  type = "remove",
+  conns = conns[env_coh[env_coh != "moba"]])
+
+dh.dropCols(
+  df = "analysis_df", 
+  vars = "ndvi300_preg_iqr_c",
+  type = "remove",
+  conns = conns[env_coh])
+
+dh.makeIQR(
+  df = "analysis_df",
+  vars = "ndvi300_preg",
+  type = "combine",
+  conns = conns[env_coh])
+
+datashield.workspace_save(conns, "bmi_poc_sec_27")
+
+
+
+
+
+
+
+
 
 

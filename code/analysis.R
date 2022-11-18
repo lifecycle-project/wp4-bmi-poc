@@ -5,6 +5,9 @@
 ## Author: Tim Cadman
 ## Email: t.cadman@bristol.ac.uk
 ################################################################################
+withr::with_libpaths(
+  new = "~/R/userlib",
+  devtools::install_github("lifecycle-project/ds-helper"))
 
 library(DSI)
 library(DSOpal)
@@ -15,20 +18,14 @@ require(magrittr)
 library(purrr)
 library(dsHelper)
 
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ds.colnames("analysis_df")
+ds.ls()
 
 library(remotes)
 install_github("lifecycle-project/ds-helper")
 library(dsHelper)
-
-# Issues to report
-# 
-# Can create variables with length >20, but can't remove them.
-# ds.dataframe fill - factor levels incorrect
-# ds.glm to retain study names in output rather than "study 1" etc
-# Possible to add 'leave out out' option for metafor package?
 
 ################################################################################
 # 1. Get descriptives for analysis sample
@@ -60,7 +57,6 @@ descriptives_eth <- dh.getStats(
   df = "analysis_df",
   vars = "ethn3_m_f",
   digits = 1,
-  conns = conns[eth_coh], 
   checks = F)
 
 descriptives_oth <- dh.getStats(
@@ -102,7 +98,7 @@ descriptives_eth_exc <- dh.getStats(
   df = "excluded_df",
   vars = "ethn3_m_f", 
   digits = 1,
-  conns = conns[eth_coh])
+  conns = conns[c(eth_coh, "abcd")])
 
 descriptives_oth_exc <- dh.getStats(
   df = "excluded_df",
@@ -110,16 +106,13 @@ descriptives_oth_exc <- dh.getStats(
   digits = 1,
   conns = conns)
 
-descriptives_oth_exc$continuous %>%
-  dplyr::filter(cohort == "elfe") %>%
-  print(n = Inf)
-
 ## ---- Bind together ----------------------------------------------------------
 descriptives_exc <- list(
   descriptives_exp_exc, descriptives_out_exc, descriptives_cov_exc, 
   descriptives_eth_exc, descriptives_oth_exc) %>%
   pmap(bind_rows)
 
+save.image()
 ## ---- Round ------------------------------------------------------------------
 descriptives_exc$continuous <- descriptives_exc$continuous %>%
   mutate(across(mean:perc_95, ~round(., 1)))
@@ -138,23 +131,6 @@ save.image()
 ## function to convert this in to model definitions. Has the advantage that you
 ## can enter information once and use the function to make the model components
 ## as required by the IPD vs SLMA functions.
-
-
-## ---- See available outcome and exposure data --------------------------------
-descriptives$continuous %>% 
-  dplyr::filter(variable == "zscores.0_730" & is.nan(mean))
-
-descriptives$continuous %>% 
-  dplyr::filter(variable == "zscores.730_1461" & is.nan(mean))
-
-descriptives$continuous %>% 
-  dplyr::filter(variable == "zscores.1461_2922" & is.nan(mean)) 
-
-descriptives$continuous %>% 
-  dplyr::filter(variable == "zscores.2922_5113" & is.nan(mean))  
-
-descriptives$continuous %>%
-dplyr::filter(variable == "zscores.5113_6544" & !is.nan(mean))  
 
 ## ---- Maternal education -----------------------------------------------------
 cohorts <- names(conns)
@@ -185,16 +161,11 @@ mat_ed.mod <- list(
     exposure = "edu_m", 
     covariates = c("age_days.6544", "sex"),
     cohorts = cohorts[cohorts %in% c(
-      "alspac", "dnbc", "nfbc66", "nfbc86", "raine")])
-)
+      "alspac", "dnbc", "nfbc66", "nfbc86", "raine")]))
 
 
 ## ---- Area deprivation -------------------------------------------------------
-descriptives[[1]] %>% 
-  dplyr::filter(variable == "area_dep" & valid_n > 0) %>%
-  print(n = Inf)
-
-env_coh <- c("alspac", "bib", "dnbc", "eden", "genr", "inma", "ninfea", "moba", 
+env_coh <- c("abcd", "alspac", "bib", "dnbc", "eden", "genr", "inma", "ninfea", "moba", 
              "rhea")
 
 area_dep.mod <- list(
@@ -221,9 +192,8 @@ area_dep.mod <- list(
   bmi_215 = list(
     outcome = "zscores.5113_6544",
     exposure = "area_dep", 
-    covariates = c("age_days.5113", "sex", "edu_m"),
-    cohorts = c("alspac", "dnbc"))
-)
+    covariates = c("age_days.6544", "sex", "edu_m"),
+    cohorts = c("alspac", "dnbc")))
 
 ## ---- NDVI -------------------------------------------------------------------
 green_covs <- c("sex", "edu_m", "parity_bin", "area_dep")
@@ -231,46 +201,32 @@ green_covs <- c("sex", "edu_m", "parity_bin", "area_dep")
 ndvi.mod <- list(
   bmi_24 = list(
     outcome = "zscores.0_730",
-    exposure = "ndvi300_preg_iqr_s",
+    exposure = "ndvi300_preg_iqr_c",
     covariates = c("age_days.730", green_covs),
     cohorts = env_coh), 
   bmi_48 = list(
     outcome = "zscores.730_1461",
-    exposure = "ndvi300_preg_iqr_s",
+    exposure = "ndvi300_preg_iqr_c",
     covariates = c("age_days.1461", green_covs),
     cohorts = env_coh[!env_coh %in% c("dnbc")]),
   bmi_96 = list(
     outcome = "zscores.1461_2922",
-    exposure = "ndvi300_preg_iqr_s", 
+    exposure = "ndvi300_preg_iqr_c", 
     covariates = c("age_days.2922", green_covs),
     cohorts = env_coh), 
   bmi_168 = list(
     outcome = "zscores.2922_5113",
-    exposure = "ndvi300_preg_iqr_s", 
+    exposure = "ndvi300_preg_iqr_c", 
     covariates = c("age_days.5113", green_covs),
     cohorts = env_coh), 
   bmi_215 = list(
     outcome = "zscores.5113_6544",
-    exposure = "ndvi300_preg_iqr_s", 
-    covariates = c("age_days.5113", "sex", "edu_m"),
-    cohorts = c("alspac", "dnbc"))
-)
+    exposure = "ndvi300_preg_iqr_c", 
+    covariates = c("age_days.6544", "sex", "edu_m"),
+    cohorts = c("alspac", "dnbc")))
 
 
 ## ---- Gestational diabetes ---------------------------------------------------
-descriptives[[1]] %>% 
-  dplyr::filter(variable == "preg_dia") %>% 
-  print(n = Inf)
-
-descriptives$categorical %>% 
-  dplyr::filter(variable == "preg_smk") %>% print(n = Inf)
-
-descriptives$categorical %>% 
-  dplyr::filter(variable == "parity_bin") %>% print(n = Inf)
-
-## Note we are excluding HGS for now as they have no-one nulliparous, though
-## I wonder if this is a coding issue.
-
 preg_dia_cov <- c(
   "sex", "edu_m", "agebirth_m_y", "prepreg_bmi_u", "prepreg_bmi_o", 
   "parity_bin", "preg_smk")
@@ -300,10 +256,9 @@ preg_dia.mod <- list(
   bmi_215 = list(
     outcome = "zscores.5113_6544",
     exposure = "preg_dia", 
-    covariates = c("age_days.5113", preg_dia_cov),
+    covariates = c("age_days.6544", preg_dia_cov),
     cohorts = cohorts[cohorts %in% c(
-      "alspac", "dnbc", "raine")])
-  )
+      "alspac", "dnbc", "raine")]))
   
 ################################################################################
 # 4. Exploring missingness  
@@ -311,15 +266,15 @@ preg_dia.mod <- list(
 ################################################################################
 # Define models  
 ################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ## ---- Function to modify models ----------------------------------------------
-dh.modToMiss <- function(x){
+dh.modToMiss <- function(x, suffix = "_m"){
   
   out <- list(
     vars = list(c(x$exposure, x$outcome, x$covariates)), 
     cohorts = x$cohorts, 
-    name = paste0(x$exposure, "_", x$outcome, "_m"))
+    name = paste0(x$exposure, "_", x$outcome, suffix))
   
 }
 
@@ -338,7 +293,7 @@ preg_dia_miss.mod <- preg_dia.mod %>%
   map(function(x){list_modify(x, exposure = "p_d")}) %>%
   map(dh.modToMiss)
 
-save.image()
+save.image("15_nov_22.RData")
 
 ################################################################################
 # Define complete cases  
@@ -365,12 +320,14 @@ conns <- datashield.login(logindata, restore = "missing_1a")
 
 ## ---- NDVI -------------------------------------------------------------------
 ds.make(
-  toAssign = "bmi_poc$ndvi300_preg_iqr_s", 
-  newobj = "n_d")
+  toAssign = "bmi_poc$ndvi300_preg_iqr_c", 
+  newobj = "n_d", 
+  datasources = conns[env_coh])
 
 ds.dataFrame(
   x = c("bmi_poc", "n_d"), 
-  newobj = "bmi_poc")
+  newobj = "bmi_poc", 
+  datasources = conns[env_coh])
 
 ndvi_miss.mod %>%
   map(., function(x){
@@ -394,11 +351,13 @@ conns <- datashield.login(logindata, restore = "missing_1b")
 ## ---- Area deprivation -------------------------------------------------------
 ds.make(
   toAssign = "bmi_poc$area_dep", 
-  newobj = "a_d")
+  newobj = "a_d", 
+  datasources = conns[env_coh])
 
 ds.dataFrame(
   x = c("bmi_poc", "a_d"), 
-  newobj = "bmi_poc")
+  newobj = "bmi_poc", 
+  datasources = conns[env_coh])
 
 area_dep_miss.mod %>%
   map(., function(x){
@@ -467,7 +426,6 @@ tojoin <- c(preg_dia_miss.mod, mat_ed_miss.mod, ndvi_miss.mod, area_dep_miss.mod
   group_by(cohort) %>%
   group_split
 
-
 ## ---- Join into one dataframe ------------------------------------------------
 tojoin %>%
   map(function(x){
@@ -481,7 +439,6 @@ tojoin %>%
 
 datashield.workspace_save(conns, "missing_2a")
 conns <- datashield.login(logindata, restore = "missing_2a")
-
 
 ## ---- Fill missing columns ---------------------------------------------------
 ds.dataFrameFill("missing", "missing")
@@ -509,6 +466,7 @@ ds.dataFrame(
 datashield.workspace_save(conns, "missing_2")
 conns <- datashield.login(logindata, restore = "missing_2")
 
+save.image("15_nov_22.RData")
 ################################################################################
 # Now extract descriptives  
 ################################################################################
@@ -541,11 +499,11 @@ miss_descriptives <- list(
   miss.descriptives_4) %>%
   pmap(bind_rows)
 
-save.image()
-
+save.image("15_nov_22.RData")
 ################################################################################
 # Regression models to see whether outcome is associated with missingness  
 ################################################################################
+conns <- datashield.login(logindata, restore = "missing_2")
 
 ## ---- Function  --------------------------------------------------------------
 dh.makeMissForm <- function(x){
@@ -603,13 +561,12 @@ preg_dia_miss.fit <- preg_dia_miss.mod %>%
     map(dh.makeMissForm) %>%
     map(dt.glmWrap, type = "ipd")
 
-save.image()
-
+save.image("15_nov_22.RData")
 
 ################################################################################
 # 5. Run core models  
 ################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ## ---- Maternal education -----------------------------------------------------
 mat_ed.fit <- list(
@@ -647,7 +604,8 @@ preg_dia.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma"))
 
-save.image()
+save.image("15_nov_22.RData")
+
 
 ################################################################################
 # 6. Now we need ns for all analyses
@@ -694,6 +652,8 @@ ord_cat_ipd <- n_ref_cat_comb %>%
     
   }) 
 
+save.image("15_nov_22.RData")
+
 ################################################################################
 # Categorical variables: cohort specific
 ################################################################################
@@ -715,19 +675,15 @@ ord_cat_slma <- n_ref_cat_coh %>%
     
   }) 
 
-save.image()
-
-
-## ---- SLMA -------------------------------------------------------------------
-
-
-save.image()
-
+save.image("15_nov_22.RData")
 
 ################################################################################
 # 7. Results stratified by sex  
 ################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+################################################################################
+# Prepare data  
+################################################################################
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ## ---- Create subsets ---------------------------------------------------------
 ds.dataFrameSubset(
@@ -745,8 +701,8 @@ ds.dataFrameSubset(
   newobj = "analysis_df_f")
 
 ## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_26")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_26")
+datashield.workspace_save(conns, "bmi_poc_sec_28")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_28")
 
 ## ---- Modify formulae --------------------------------------------------------
 mat_ed_sex.mod <- dt.changeForm(
@@ -777,8 +733,11 @@ preg_dia_sex.mod <- dt.changeForm(
   type = "remove", 
   elements = names(preg_dia.mod))
 
+save.image("15_nov_22.RData")
 
-## ---- Analysis for males -----------------------------------------------------
+################################################################################
+# Males  
+################################################################################
 mat_ed_m.fit <- list(
   ipd = mat_ed_sex.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
@@ -786,10 +745,6 @@ mat_ed_m.fit <- list(
   slma = mat_ed_sex.mod %>% 
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma", df = "analysis_df_m"))
-
-save.image()
-
-
 
 area_dep_sex_m.mod <- area_dep_sex.mod %>%
     dt.changeForm(
@@ -806,8 +761,6 @@ area_dep_m.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma", df = "analysis_df_m"))
 
-save.image()
-
 ndvi_sex_m.mod <- ndvi_sex.mod %>%
     dt.changeForm(
       var = "ninfea",
@@ -822,8 +775,6 @@ ndvi_m.fit <- list(
   slma = ndvi_sex_m.mod %>% 
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma", df = "analysis_df_m"))
-
-save.image()
 
 # Disclosure risk for ALPSAC and RAINE on first two models
 preg_dia_sex_m.mod <- preg_dia_sex.mod %>%
@@ -843,9 +794,11 @@ preg_dia_m.fit <- list(
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd", df = "analysis_df_m"))
   
-save.image()      
+save.image("15_nov_22.RData")  
 
-## ---- Analysis for females ---------------------------------------------------
+################################################################################
+# Females  
+################################################################################
 mat_ed_f.fit <- list(
   ipd = mat_ed_sex.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
@@ -854,9 +807,7 @@ mat_ed_f.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma", df = "analysis_df_f"))
 
-save.image()
-
-
+save.image("15_nov_22.RData")
 
 area_dep_f.fit <- list(
   ipd = area_dep_sex_m.mod %>% 
@@ -866,9 +817,7 @@ area_dep_f.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma", df = "analysis_df_f"))
 
-
-
-save.image()
+save.image("15_nov_22.RData")
 
 ndvi_sex_f.mod <- ndvi_sex.mod %>%
   dt.changeForm(
@@ -882,7 +831,7 @@ ndvi_f.fit <- list(
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd", df = "analysis_df_f"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 preg_dia_sex_f.mod <- preg_dia_sex.mod %>%
   dt.changeForm(
@@ -901,7 +850,7 @@ preg_dia_f.fit <- list(
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd", df = "analysis_df_f"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ################################################################################
 # 6. Test for interactions by sex  
@@ -924,7 +873,7 @@ area_dep_int.mod <- dt.changeForm(
 
 ndvi_int.mod <- dt.changeForm(
   model = ndvi.mod, 
-  var = "ndvi300_preg_iqr_s*sex", 
+  var = "ndvi300_preg_iqr_c*sex", 
   category = "covariates", 
   type = "add", 
   elements = names(ndvi.mod)) %>%
@@ -956,7 +905,7 @@ mat_ed_int.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 area_dep_int.fit <- list(
   ipd = area_dep_int.mod %>% 
@@ -966,7 +915,7 @@ area_dep_int.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ndvi_int.fit <- list(
   ipd = ndvi_int.mod %>% 
@@ -976,7 +925,7 @@ ndvi_int.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 preg_dia_int.fit <- list(
   ipd = preg_dia_int.mod %>% 
@@ -986,21 +935,15 @@ preg_dia_int.fit <- list(
     map(dt.makeGlmForm, type = "slma") %>% 
     map(dt.glmWrap, type = "slma"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ################################################################################
 # ADDITIONALLY ADJUSTING FOR ETHNICITY
 ################################################################################
 ################################################################################
-# Create subsets
-################################################################################
-
-
-
-################################################################################
 # Define models
 ################################################################################
-eth_coh <- c("alspac", "bib", "elfe", "gecko", "genr", "inma", "raine")
+eth_coh <- c("abcd", "alspac", "bib", "elfe", "gecko", "genr", "inma", "raine")
 
 mat_ed_eth.mod <- list(
   bmi_24 = list(
@@ -1027,11 +970,11 @@ mat_ed_eth.mod <- list(
     outcome = "zscores.5113_6544",
     exposure = "edu_m", 
     covariates = c("age_days.6544", "sex", "ethn3_m_f"),
-    cohorts = "alspac"))
+    cohorts = c("alspac", "raine")))
 
 
 ## ---- Area deprivation -------------------------------------------------------
-env_eth_coh <- c("alspac", "bib", "genr", "inma")
+env_eth_coh <- c("abcd", "alspac", "bib", "genr", "inma")
 
 area_dep_eth.mod <- list(
   bmi_24 = list(
@@ -1057,35 +1000,35 @@ area_dep_eth.mod <- list(
   bmi_215 = list(
     outcome = "zscores.5113_6544",
     exposure = "area_dep", 
-    covariates = c("age_days.5113", "sex", "edu_m", "ethn3_m_f"),
+    covariates = c("age_days.6544", "sex", "edu_m", "ethn3_m_f"),
     cohorts = "alspac"))
 
 ## ---- NDVI -------------------------------------------------------------------
 ndvi_eth.mod <- list(
   bmi_24 = list(
     outcome = "zscores.0_730",
-    exposure = "ndvi300_preg_iqr_s",
+    exposure = "ndvi300_preg_iqr_c",
     covariates = c("age_days.730", green_covs, "ethn3_m_f"),
     cohorts = env_eth_coh), 
   bmi_48 = list(
     outcome = "zscores.730_1461",
-    exposure = "ndvi300_preg_iqr_s",
+    exposure = "ndvi300_preg_iqr_c",
     covariates = c("age_days.1461", green_covs, "ethn3_m_f"),
     cohorts = env_eth_coh),
   bmi_96 = list(
     outcome = "zscores.1461_2922",
-    exposure = "ndvi300_preg_iqr_s", 
+    exposure = "ndvi300_preg_iqr_c", 
     covariates = c("age_days.2922", green_covs, "ethn3_m_f"),
     cohorts = env_eth_coh), 
   bmi_168 = list(
     outcome = "zscores.2922_5113",
-    exposure = "ndvi300_preg_iqr_s", 
+    exposure = "ndvi300_preg_iqr_c", 
     covariates = c("age_days.5113", green_covs, "ethn3_m_f"),
     cohorts = env_eth_coh), 
   bmi_215 = list(
     outcome = "zscores.5113_6544",
-    exposure = "ndvi300_preg_iqr_s", 
-    covariates = c("age_days.5113", green_covs, "ethn3_m_f"),
+    exposure = "ndvi300_preg_iqr_c", 
+    covariates = c("age_days.6544", green_covs, "ethn3_m_f"),
     cohorts = "alspac"))
 
 
@@ -1114,13 +1057,13 @@ preg_dia_eth.mod <- list(
   bmi_215 = list(
     outcome = "zscores.5113_6544",
     exposure = "preg_dia", 
-    covariates = c("age_days.5113", preg_dia_cov, "ethn3_m_f"),
-    cohorts = "alspac"))
+    covariates = c("age_days.6544", preg_dia_cov, "ethn3_m_f"),
+    cohorts = c("alspac", "raine")))
 
 ################################################################################
 # Define subsets
 ################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ## ---- Helper function --------------------------------------------------------
 defineEthSub <- function(x){
@@ -1190,6 +1133,9 @@ eth_sub.mod %>%
     
   })
 
+datashield.workspace_save(conns, "bmi_poc_sec_29a")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_29")
+
 ## ---- Create subsets ---------------------------------------------------------
 eth_sub.mod %>%
   pmap(function(vars, coh, new_obj, new_sub, ...){
@@ -1204,20 +1150,9 @@ eth_sub.mod %>%
     
   })
 
-## ---- Remove some objects ----------------------------------------------------
-eth_sub.mod %>%
-  pmap(function(coh, new_obj, ...){
-
-dh.tidyEnv(
-  obj = new_obj,
-  conns = conns[unlist(coh)], 
-  type = "remove")
-    
-  })
-
 ## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "bmi_poc_sec_27")
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
+datashield.workspace_save(conns, "bmi_poc_sec_29")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_29")
 
 ################################################################################
 # Define revised regression models
@@ -1236,6 +1171,8 @@ eth_main.fit <- eth_sub.mod %>%
 
   })
 
+save.image("15_nov_22.RData")
+
 ## ---- Adjusting for ethnicity using subset -----------------------------------
 eth_eth.fit <- eth_sub.mod %>%
   pmap(function(eth_form, coh, new_sub, ...){
@@ -1249,58 +1186,12 @@ eth_eth.fit <- eth_sub.mod %>%
     
   })
 
-save.image()
-
-
-  
-  tibble(
-  
-)
-
-
-
-
-
-
-
-
-
+save.image("15_nov_22.RData")
 
 ################################################################################
-# Run models
+# Repeat analyses removing DNBC and MoBa  
 ################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
-
-## ---- Maternal education -----------------------------------------------------
-mat_ed_eth.fit <- list(
-  slma = mat_ed_eth.mod %>% 
-    map(dt.makeGlmForm, type = "slma") %>% 
-    map(dt.glmWrap, type = "slma"))
-
-## ---- Area deprivation -------------------------------------------------------
-area_dep_eth.fit <- list(
-  slma = area_dep_eth.mod %>% 
-    map(dt.makeGlmForm, type = "slma") %>% 
-    map(dt.glmWrap, type = "slma"))
-
-## ---- NDVI -------------------------------------------------------------------
-ndvi_eth.fit <- list(
-  slma = ndvi_eth.mod %>% 
-    map(dt.makeGlmForm, type = "slma") %>% 
-    map(dt.glmWrap, type = "slma"))
-
-## ---- Gestational diabetes ---------------------------------------------------
-preg_dia_eth.fit <- list(
-  slma = preg_dia_eth.mod %>% 
-    map(dt.makeGlmForm, type = "slma") %>% 
-    map(dt.glmWrap, type = "slma"))
-
-save.image()
-
-################################################################################
-# 8. Repeat analyses removing DNBC and MoBa  
-################################################################################
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ## ---- Amend model definitions ------------------------------------------------
 mat_ed_remove.mod <- dt.changeForm(
@@ -1310,12 +1201,16 @@ mat_ed_remove.mod <- dt.changeForm(
   type = "remove", 
   elements = names(mat_ed.mod))
 
+mat_ed_remove.mod <- mat_ed_remove.mod[1:4]
+
 area_dep_remove.mod <- dt.changeForm(
   model = area_dep.mod, 
   var = c("dnbc", "moba"), 
   category = "cohorts", 
   type = "remove", 
   elements = names(area_dep.mod))
+
+area_dep_remove.mod <- area_dep_remove.mod[1:4]
 
 ndvi_remove.mod <- dt.changeForm(
   model = ndvi.mod, 
@@ -1324,6 +1219,8 @@ ndvi_remove.mod <- dt.changeForm(
   type = "remove", 
   elements = names(ndvi.mod))
 
+ndvi_remove.mod <- ndvi_remove.mod[1:4]
+
 preg_dia_remove.mod <- dt.changeForm(
   model = preg_dia.mod, 
   var = c("dnbc", "moba"), 
@@ -1331,37 +1228,548 @@ preg_dia_remove.mod <- dt.changeForm(
   type = "remove",
   elements = names(preg_dia.mod))
 
+preg_dia_remove.mod <- preg_dia_remove.mod[1:4]
+
 ## ---- Run models -------------------------------------------------------------
 mat_ed_remove.fit <- list(
-  ipd = mat_ed_remove.mod[1:4] %>% 
+  ipd = mat_ed_remove.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ## ---- Area deprivation -------------------------------------------------------
 area_dep_remove.fit <- list(
-  ipd = area_dep_remove.mod[1:4] %>% 
+  ipd = area_dep_remove.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ## ---- NDVI -------------------------------------------------------------------
 ndvi_remove.fit <- list(
-  ipd = ndvi_remove.mod[1:4] %>% 
+  ipd = ndvi_remove.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd"))
 
-save.image()
+save.image("15_nov_22.RData")
 
 ## ---- Gestational diabetes ---------------------------------------------------
 preg_dia_remove.fit <- list(
-  ipd = preg_dia_remove.mod[1:4] %>% 
+  ipd = preg_dia_remove.mod %>% 
     map(dt.makeGlmForm, type = "ipd") %>% 
     map(dt.glmWrap, type = "ipd"))
 
-save.image()
+save.image("15_nov_22.RData")
+
+################################################################################
+# AJE REVIEWER ROUND 1  
+################################################################################
+################################################################################
+# Identify number of observations per subject  
+################################################################################
+conns <- datashield.login(logindata, restore = "missing_2")
+
+## ---- First create dataset with missing and just child_id --------------------
+dh.dropCols(
+  df = "bmi_poc", 
+  vars = "child_id", 
+  type = "keep", 
+  new_obj = "baseline_min")
+
+ds.dataFrame(
+  x = c("baseline_min", "missing"),
+  newobj = "missing_tmp")
+
+## ---- Now create vectors indicating how many observations --------------------
+obs_num.ref <- tribble(
+  ~var, ~new_obj, ~exposure,
+  "edu_m_zscores.0_730_m_fact", "edu_m_0_m", "edu_m",
+  "edu_m_zscores.730_1461_m_fact", "edu_m_730_m", "edu_m",
+  "edu_m_zscores.1461_2922_m_fact", "edu_m_1461_m", "edu_m",
+  "edu_m_zscores.2922_5113_m_fact", "edu_m_2922_m", "edu_m",
+  "edu_m_zscores.5113_6544_m_fact","edu_m_5113_m", "edu_m",
+  "a_d_zscores.0_730_m_fact", "a_d_m_0", "a_d",
+  "a_d_zscores.730_1461_m_fact", "a_d_m_730", "a_d",
+  "a_d_zscores.1461_2922_m_fact", "a_d_m_1461", "a_d",
+  "a_d_zscores.2922_5113_m_fact", "a_d_m_2922", "a_d",
+  "a_d_zscores.5113_6544_m_fact", "a_d_m_5113", "a_d",
+  "n_d_zscores.0_730_m_fact", "n_d_m_0", "n_d",
+  "n_d_zscores.730_1461_m_fact", "n_d_m_730", "n_d",
+  "n_d_zscores.1461_2922_m_fact", "n_d_m_1461", "n_d",
+  "n_d_zscores.2922_5113_m_fact", "n_d_m_2922", "n_d",
+  "n_d_zscores.5113_6544_m_fact", "n_d_m_5113", "n_d",
+  "p_d_zscores.0_730_m_fact", "p_d_n_0", "p_d",
+  "p_d_zscores.730_1461_m_fact", "p_d_n_730", "p_d",  
+  "p_d_zscores.1461_2922_m_fact", "p_d_n_1461", "p_d",
+  "p_d_zscores.2922_5113_m_fact", "p_d_n_2922", "p_d",
+  "p_d_zscores.5113_6544_m_fact", "p_d_n_5113", "p_d") 
+
+obs_num.ref %>%
+  pmap(function(var, new_obj, ...){
+    
+    ds.asNumeric(var, new_obj)
+    
+  })
+
+obs_num.ref %>%
+  group_by(exposure) %>%
+  group_split %>%
+  map(function(x){
+    
+    ds.assign(
+      toAssign = paste(x$new_obj, collapse = "+"), 
+      newobj = paste0(x$exposure[1], "_n"))
+    
+  })
+
+## ---- Convert back to factors ------------------------------------------------
+n.vars <- c("edu_m_n", "a_d_n", "n_d_n", "p_d_n")
+n.vars %>%  map(~ds.asFactor(.x, .x))
+
+## ---- Join back into baseline_df ---------------------------------------------
+ds.dataFrame(
+  x = c("baseline_min", n.vars), 
+  newobj = "baseline_ns")
+
+## ---- Now left join back into final df ---------------------------------------
+ds.merge(
+  x.name = "analysis_df", 
+  y.name = "baseline_ns", 
+  by.x.names = "child_id", 
+  by.y.names = "child_id", 
+  all.x = TRUE,
+  all.y = FALSE,
+  newobj = "n_obs_df")
+
+## ---- Drop unneeded columns --------------------------------------------------
+dh.dropCols(
+  df = "n_obs_df", 
+  vars = c("child_id", n.vars), 
+  type = "keep")
+
+ds.dim("analysis_df")
+ds.dim("n_obs_df")
+
+## ---- Get stats --------------------------------------------------------------
+n_obs.stats <- dh.getStats(
+  df = "n_obs_df", 
+  vars = n.vars)
+
+datashield.workspace_save(conns, "bmi_n_obs")
+conns <- datashield.login(logindata, restore = "bmi_n_obs")
+
+################################################################################
+# SELECTION BIAS  
+################################################################################
+################################################################################
+# Define revised models  
+################################################################################
+sel_coh <- c("alspac", "dnbc", "nfbc66", "nfbc86", "raine")
+
+## ---- Maternal education -----------------------------------------------------
+mat_ed_sel.mod <- list(
+  bmi_24 = list(
+    outcome = "zscores.0_730",
+    exposure = "edu_m",
+    covariates = c("age_days.730", "sex"),
+    cohorts = sel_coh), 
+  bmi_48 = list(
+    outcome = "zscores.730_1461",
+    exposure = "edu_m",
+    covariates = c("age_days.1461", "sex"),
+    cohorts = sel_coh[sel_coh != "dnbc"]),
+  bmi_96 = list(
+    outcome = "zscores.1461_2922",
+    exposure = "edu_m", 
+    covariates = c("age_days.2922", "sex"),
+    cohorts = sel_coh),
+  bmi_168 = list(
+    outcome = "zscores.2922_5113",
+    exposure = "edu_m", 
+    covariates = c("age_days.5113", "sex"),
+    cohorts = sel_coh), 
+  bmi_215 = list(
+    outcome = "zscores.5113_6544",
+    exposure = "edu_m", 
+    covariates = c("age_days.6544", "sex"),
+    cohorts = sel_coh))
+
+## ---- Area deprivation -------------------------------------------------------
+env_sel_coh <- c("alspac", "dnbc")
+
+area_dep_sel.mod <- list(
+  bmi_24 = list(
+    outcome = "zscores.0_730",
+    exposure = "area_dep",
+    covariates = c("age_days.730", "sex", "edu_m"),
+    cohorts = env_sel_coh), 
+  bmi_48 = list(
+    outcome = "zscores.730_1461",
+    exposure = "area_dep",
+    covariates = c("age_days.1461", "sex", "edu_m"),
+    cohorts = "alspac"),
+  bmi_96 = list(
+    outcome = "zscores.1461_2922",
+    exposure = "area_dep", 
+    covariates = c("age_days.2922", "sex", "edu_m"),
+    cohorts = env_sel_coh),
+  bmi_168 = list(
+    outcome = "zscores.2922_5113",
+    exposure = "area_dep", 
+    covariates = c("age_days.5113", "sex", "edu_m"),
+    cohorts = env_sel_coh), 
+  bmi_215 = list(
+    outcome = "zscores.5113_6544",
+    exposure = "area_dep", 
+    covariates = c("age_days.6544", "sex", "edu_m"),
+    cohorts = env_sel_coh))
+
+## ---- NDVI -------------------------------------------------------------------
+ndvi_sel.mod <- list(
+  bmi_24 = list(
+    outcome = "zscores.0_730",
+    exposure = "ndvi300_preg_iqr_c",
+    covariates = c("age_days.730", green_covs),
+    cohorts = env_sel_coh), 
+  bmi_48 = list(
+    outcome = "zscores.730_1461",
+    exposure = "ndvi300_preg_iqr_c",
+    covariates = c("age_days.1461", green_covs),
+    cohorts = "alspac"),
+  bmi_96 = list(
+    outcome = "zscores.1461_2922",
+    exposure = "ndvi300_preg_iqr_c", 
+    covariates = c("age_days.2922", green_covs),
+    cohorts = env_sel_coh), 
+  bmi_168 = list(
+    outcome = "zscores.2922_5113",
+    exposure = "ndvi300_preg_iqr_c", 
+    covariates = c("age_days.5113", green_covs),
+    cohorts = env_sel_coh), 
+  bmi_215 = list(
+    outcome = "zscores.5113_6544",
+    exposure = "ndvi300_preg_iqr_c", 
+    covariates = c("age_days.6544", "sex", "edu_m"),
+    cohorts = env_sel_coh))
+
+
+## ---- Gestational diabetes ---------------------------------------------------
+preg_dia_sel_coh <- c("alspac", "dnbc", "raine")
+
+preg_dia_sel.mod <- list(
+  bmi_24 = list(
+    outcome = "zscores.0_730",
+    exposure = "preg_dia",
+    covariates = c("age_days.730", preg_dia_cov),
+    cohorts = preg_dia_sel_coh), 
+  bmi_48 = list(
+    outcome = "zscores.730_1461",
+    exposure = "preg_dia",
+    covariates = c("age_days.1461", preg_dia_cov),
+    cohorts = c("alspac", "raine")),
+  bmi_96 = list(
+    outcome = "zscores.1461_2922",
+    exposure = "preg_dia", 
+    covariates = c("age_days.2922", preg_dia_cov),
+    cohorts = preg_dia_sel_coh), 
+  bmi_168 = list(
+    outcome = "zscores.2922_5113",
+    exposure = "preg_dia", 
+    covariates = c("age_days.5113", preg_dia_cov),
+    cohorts = preg_dia_sel_coh), 
+  bmi_215 = list(
+    outcome = "zscores.5113_6544",
+    exposure = "preg_dia", 
+    covariates = c("age_days.6544", preg_dia_cov),
+    cohorts = preg_dia_sel_coh))
+
+################################################################################
+# Create subset containing only participants at older ages  
+################################################################################
+conns <- datashield.login(logindata, restore = "missing_2")
+
+## ---- Maternal education -----------------------------------------------------
+ds.dataFrameSubset(
+  df.name = "bmi_poc", 
+  V1.name = "edu_m_zscores.5113_6544_m_fact", 
+  V2.name = "1",
+  Boolean.operator = "==",
+  newobj = "edu_m_sel", 
+  datasources = conns[sel_coh])
+
+## ---- Area deprivation -------------------------------------------------------
+ds.dataFrameSubset(
+  df.name = "bmi_poc", 
+  V1.name = "a_d_zscores.5113_6544_m_fact", 
+  V2.name = "1",
+  Boolean.operator = "==",
+  newobj = "area_dep_sel", 
+  datasources = conns[env_sel_coh])
+
+## ---- NDVI -------------------------------------------------------------------
+ds.dataFrameSubset(
+  df.name = "bmi_poc", 
+  V1.name = "n_d_zscores.5113_6544_m_fact", 
+  V2.name = "1",
+  Boolean.operator = "==",
+  newobj = "ndvi_sel", 
+  datasources = conns[env_sel_coh])
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+ds.dataFrameSubset(
+  df.name = "bmi_poc", 
+  V1.name = "p_d_zscores.5113_6544_m_fact", 
+  V2.name = "1",
+  Boolean.operator = "==",
+  newobj = "preg_dia_sel", 
+  datasources = conns[preg_dia_sel_coh])
+
+datashield.workspace_save(conns, "selection")
+conns <- datashield.login(logindata, restore = "selection")
+################################################################################
+# Re-run models  
+################################################################################
+
+## ---- Maternal education -----------------------------------------------------
+mat_ed_sel.fit <- mat_ed_sel.mod %>% 
+    map(dt.makeGlmForm, type = "ipd") %>% 
+    map(dt.glmWrap, type = "ipd", df = "edu_m_sel")
+
+## ---- Area deprivation -------------------------------------------------------
+area_dep_sel.form <- area_dep_sel.mod %>% 
+  map(dt.makeGlmForm, type = "ipd")
+
+area_dep_sel.form$bmi_48$model <- "zscores.730_1461~area_dep+age_days.1461+sex+edu_m"
+
+area_dep_sel.fit <- area_dep_sel.form %>%
+  map(dt.glmWrap, type = "ipd", df = "area_dep_sel")
+
+## ---- NDVI -------------------------------------------------------------------
+ndvi_sel.form <- ndvi_sel.mod %>% 
+  map(dt.makeGlmForm, type = "ipd")
+
+ndvi_sel.form$bmi_48$model <- "zscores.730_1461~ndvi300_preg_iqr_c+age_days.1461+sex+edu_m+parity_bin+area_dep"
+
+ndvi_sel.fit <- ndvi_sel.form %>%
+  map(dt.glmWrap, type = "ipd", df = "ndvi_sel")
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+preg_dia_sel.fit <- preg_dia_sel.mod %>% 
+  map(dt.makeGlmForm, type = "ipd") %>% 
+  map(dt.glmWrap, type = "ipd", df = "preg_dia_sel")
+
+save.image("15_nov_22.RData")
+################################################################################
+# Get Ns for sensitivity analysis for revised figures  
+################################################################################
+################################################################################
+# New models for complete cases   
+################################################################################
+mat_ed_sens_miss.mod <- mat_ed_sel.mod %>% map(dh.modToMiss, suffix = "_s")
+
+area_dep_sens_miss.mod <- area_dep_sel.mod %>%
+  map(function(x){list_modify(x, exposure = "a_d_s")}) %>%
+  map(dh.modToMiss, suffix = "_s")
+
+ndvi_sens_miss.mod <- ndvi_sel.mod %>% 
+  map(function(x){list_modify(x, exposure = "n_d_s")}) %>%
+  map(dh.modToMiss, suffix = "_s")
+
+preg_dia_sens_miss.mod <- preg_dia_sel.mod %>% 
+  map(function(x){list_modify(x, exposure = "p_d_s")}) %>%
+  map(dh.modToMiss, suffix = "_s")
+
+save.image("15_nov_22.RData")
+
+################################################################################
+# Define complete cases  
+################################################################################
+
+## ---- Maternal education -----------------------------------------------------
+mat_ed_sens_miss.mod %>%
+  map(., function(x){
+    
+    pmap(x, function(vars, name, cohorts){
+      
+      dh.defineCases(
+        df = "edu_m_sel", 
+        vars = vars, 
+        new_obj = name, 
+        type = "all", 
+        conns = conns[cohorts], 
+        checks = FALSE)
+    })
+  })
+
+## ---- Area deprivation -------------------------------------------------------
+ds.make(
+  toAssign = "area_dep_sel$area_dep", 
+  newobj = "a_d_s", 
+  datasources = conns[env_sel_coh])
+
+ds.dataFrame(
+  x = c("area_dep_sel", "a_d_s"), 
+  newobj = "area_dep_sel", 
+  datasources = conns[env_sel_coh])
+
+area_dep_sens_miss.mod %>%
+  map(., function(x){
+    
+    pmap(x, function(vars, name, cohorts){
+      
+      dh.defineCases(
+        df = "area_dep_sel", 
+        vars = vars, 
+        new_obj = name, 
+        type = "all", 
+        conns = conns[cohorts], 
+        checks = FALSE)
+      
+    })
+  })
+
+## ---- NDVI -------------------------------------------------------------------
+ds.make(
+  toAssign = "ndvi_sel$ndvi300_preg_iqr_c", 
+  newobj = "n_d_s", 
+  datasources = conns[env_sel_coh])
+
+ds.dataFrame(
+  x = c("ndvi_sel", "n_d_s"), 
+  newobj = "ndvi_sel", 
+  datasources = conns[env_sel_coh])
+
+ndvi_sens_miss.mod %>%
+  map(., function(x){
+    
+    pmap(x, function(vars, name, cohorts){
+      
+      dh.defineCases(
+        df = "ndvi_sel", 
+        vars = vars, 
+        new_obj = name, 
+        type = "all", 
+        conns = conns[cohorts], 
+        checks = FALSE)
+      
+    })
+  })
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+ds.make(
+  toAssign = "preg_dia_sel$preg_dia", 
+  newobj = "p_d_s", 
+  datasources = conns[preg_dia_sel_coh])
+
+ds.dataFrame(
+  x = c("preg_dia_sel", "p_d_s"), 
+  newobj = "preg_dia_sel", 
+  datasources = conns[preg_dia_sel_coh])
+
+preg_dia_sens_miss.mod %>%
+  map(., function(x){
+    
+    pmap(x, function(vars, name, cohorts){
+      
+      dh.defineCases(
+        df = "preg_dia_sel", 
+        vars = vars, 
+        new_obj = name, 
+        type = "all", 
+        conns = conns[cohorts], 
+        checks = FALSE)
+      
+    })
+  })
+
+save.image("15_nov_22.RData")
+
+## ---- Save progress ----------------------------------------------------------
+datashield.workspace_save(conns, "selection_1")
+conns <- datashield.login(logindata, restore = "selection_1")
+
+################################################################################
+# Categorical variables: combined
+################################################################################
+missRef <- function(mod){
+
+mod %>%
+  map(function(x){
+    
+    tibble(
+      cohort_str = paste(x$cohorts, collapse = ","), 
+      variable = paste(x$name, collapse = ","))
+    
+  }) %>%
+  bind_rows
+  
+}
+
+sens_n.ref <- bind_rows(
+  missRef(mat_ed_sens_miss.mod) %>% mutate(exposure = "edu_m"),
+  missRef(area_dep_sens_miss.mod) %>% mutate(exposure = "a_d_s"),
+  missRef(preg_dia_sens_miss.mod) %>% mutate(exposure = "p_d_s")) %>%
+  mutate(df = c(
+    rep("edu_m_sel", 5),
+    rep("area_dep_sel", 5),
+    rep("preg_dia_sel", 5)))
+
+save.image("15_nov_22.RData")
+
+## ---- IPD --------------------------------------------------------------------
+sens_cat <- sens_n.ref %>%
+  pmap(function(variable, cohort_str, exposure, df){
+    
+    ds.table(
+      rvar = paste0(df, "$", exposure), 
+      cvar = variable,
+      useNA = "always",
+      datasources = conns[str_split(cohort_str, ",")[[1]]])
+    
+  }) 
+
+save.image("15_nov_22.RData")
+################################################################################
+# Categorical variables: cohort specific
+################################################################################
+missRefCoh <- function(mod, exposure, df){
+  
+  mod %>%
+    map(function(x){
+      
+      tibble(
+        cohort = x$cohorts,
+        variable = x$name, 
+        exposure = exposure,
+        df = df)
+      
+    }) %>%
+    bind_rows
+  
+}
+
+## ---- Reference table --------------------------------------------------------
+sens_cat_coh.ref <- bind_rows(
+  missRefCoh(mat_ed_sens_miss.mod, exposure = "edu_m", df = "edu_m_sel"),
+  missRefCoh(area_dep_sens_miss.mod, exposure = "a_d_s", df = "area_dep_sel"),
+  missRefCoh(ndvi_sens_miss.mod, exposure = "n_d_s", df = "ndvi_sel"),
+  missRefCoh(preg_dia_sens_miss.mod, exposure = "p_d_s", df = "preg_dia_sel"))
+  
+## ---- Get variables ----------------------------------------------------------
+sens_cat_coh <- sens_cat_coh.ref %>%
+  dplyr::filter(exposure != "n_d_s") %>%
+  pmap(function(variable, cohort, exposure, df){
+    
+    ds.table(
+      rvar = paste0(df, "$", exposure), 
+      cvar = variable,
+      useNA = "always",
+      datasources = conns[cohort])
+    
+  }) 
+
+save.image("15_nov_22.RData")
 
 
 

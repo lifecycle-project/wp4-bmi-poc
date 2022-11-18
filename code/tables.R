@@ -14,7 +14,7 @@
 
 library(dsHelper)
 
-conns <- datashield.login(logindata, restore = "bmi_poc_sec_25")
+conns <- datashield.login(logindata, restore = "bmi_poc_sec_27")
 
 ################################################################################
 # METHODS  
@@ -29,25 +29,15 @@ coh_n <- length(coh_inc)
 ################################################################################
 # Maximum sample size
 ################################################################################
-original_n <- dh.getStats(
-  df = "bmi_poc", 
-  vars = "sex",
-  conns = conns
-)
+
+## ---- Get dimensions ---------------------------------------------------------
+bmi_dim <- ds.dim("bmi_poc")
+analysis_dim <- ds.dim("analysis_df")
 
 ## ---- Original dataset -------------------------------------------------------
-max_n <- original_n[[1]] %>%
-  dplyr::filter(variable == "sex" & category == 1) %>%
-  dplyr::select(cohort, cohort_n)
-
-## ---- Analysis dataset -------------------------------------------------------
-cohort_ns <- descriptives[[1]] %>%
-  dplyr::filter(variable == "sex" & category == 1) %>%
-  dplyr::select(cohort, cohort_n) 
-
-## ---- Participants with no eligible data -------------------------------------
-max_n %>% dplyr::filter(cohort == "combined") %>% pull(cohort_n) - 
-cohort_ns %>% dplyr::filter(cohort == "combined") %>% pull(cohort_n)
+original_n <- bmi_dim[length(bmi_dim)][[1]][1]
+final_n <- analysis_dim[length(analysis_dim)][[1]][1]
+removed_n <- original_n - final_n
 
 ## ---- Maximum sample sizes ---------------------------------------------------
 miss_descriptives$categorical %>%
@@ -58,6 +48,13 @@ miss_descriptives$categorical %>%
     "edu_m_zscores.0_730_m_fact", "a_d_zscores.0_730_m_fact", 
     "n_d_zscores.0_730_m_fact", "p_d_zscores.0_730_m_fact") &
       category == 1)
+
+## ---- Cohort numbers ---------------------------------------------------------
+cohort_ns <- analysis_dim %>%
+  map(~.[[1]] %>% as_tibble) %>%
+  set_names(c(names(conns), "combined")) %>%
+  bind_rows(.id = "cohort")
+
 
 ################################################################################
 # Data prep  
@@ -73,9 +70,9 @@ ref_tab <- cohort_ns %>%
       ordered = TRUE)) %>%
   arrange(cohort_neat) %>%
   mutate(
-    names_neat = paste0(cohort_neat, " (n=", cohort_n, ")")) %>%
+    names_neat = paste0(cohort_neat, " (n=", value, ")")) %>%
   mutate(names_neat = factor(names_neat, levels = names_neat, ordered = TRUE)) %>%
-  dplyr::select(-cohort_n)
+  dplyr::select(-value)
   
 ################################################################################
 # Table 1 info
@@ -103,6 +100,7 @@ table_1_ages <- descriptives$continuous %>%
   mutate(across(low:high, ~round(.x / 365.2422))) %>%
   mutate(out = paste0(low, " - ", high))
 
+table_1_n %>% print(n = Inf)
 write_csv(table_1_ages, file = here("tables", "table_1_ages.csv"))
 
 ################################################################################
@@ -131,6 +129,7 @@ eth_coh <- c("alspac", "bib", "chop", "elfe", "gecko", "genr", "inma", "raine")
 ################################################################################
 # Table S4: Sample characteristics analysis sample vs excluded  
 ################################################################################
+
 makeSampleComp <- function(x){
   
   tmp_1 <- x$continuous %>%
@@ -140,9 +139,10 @@ makeSampleComp <- function(x){
         "zscores.2922_5113", "zscores.5113_6544", "height_m", "ga_all", 
         "agebirth_m_y") &
         cohort == "combined") %>%
-    mutate(value = paste0(perc_50, " (", perc_25, ",", perc_75, ")")) %>%
-    dplyr::select(variable, value, cohort_n) %>%
-    mutate(category = NA)
+    mutate(
+      value = paste0(perc_50, " (", perc_25, ",", perc_75, ")"), 
+      missing = paste0(missing_n, " (", missing_perc, ")")) %>%
+    dplyr::select(variable, value, missing, cohort_n) 
   
   tmp_2 <- x$categorical %>%
     dplyr::filter(
@@ -150,13 +150,17 @@ makeSampleComp <- function(x){
         "edu_m", "preg_dia", "area_dep", "sex", "preg_smk", "preg_ht", 
         "parity_bin", "ethn3_m_f", "prepreg_bmi_u_f", "prepreg_bmi_o_f") &
         cohort == "combined" &
-        category != "missing") %>%
-    mutate(value = paste0(value, " (", perc_valid, ")")) %>%
-    dplyr::select(variable, category, value, cohort_n)
+        !is.na(category)) %>%
+    mutate(
+      value = paste0(value, " (", perc_total, ")"), 
+      missing = paste0(missing_n, " (", perc_missing, ")")) %>%
+    dplyr::select(variable, category, value, missing, cohort_n)
   
-  out <- bind_rows(tmp_1, tmp_2)
+  bind_rows(tmp_1, tmp_2)
   
 }
+
+x <- descriptives_exc
 
 a_sample.desc <- makeSampleComp(descriptives) %>% 
   mutate(sample = "analysis")
@@ -199,12 +203,14 @@ cc.tab <- miss_descriptives$categorical %>%
 
 write_csv(cc.tab, here("tables", "complete_cases.csv"))  
 
+miss_descriptives$categorical %>% print(n = Inf)
+
 ################################################################################
 # Table S6: Covariate descriptive statistics  
 ################################################################################
 cov_cat.tab <- descriptives$categorical %>%
-  dplyr::filter(variable %in% c("sex", "parity_bin", "preg_smk", "preg_ht", 
-                         "ethn3_m_f", "prepreg_bmi_u_f", "prepreg_bmi_o_f")) %>%
+  dplyr::filter(variable %in% c("sex", "parity_bin", "preg_smk", "ethn3_m_f", 
+                                "prepreg_bmi_u_f", "prepreg_bmi_o_f")) %>%
   mutate(n_perc = paste0(value, " (", perc_total, ")")) %>%
   dplyr::select(cohort, variable, category, n_perc) %>% 
   pivot_wider(
@@ -218,7 +224,7 @@ cov_cont.tab <- descriptives$continuous %>%
   dplyr::select(cohort, variable, med_range, missing) %>%
   pivot_wider(names_from = variable, values_from = c(med_range, missing))
 
-cov.tab <- bind_cols(cov_cat.tab, dplyr::select(cov_cont.tab, -cohort)) %>%
+cov.tab <- left_join(cov_cat.tab, cov_cont.tab, by = "cohort") %>%
   left_join(., ref_tab, by = "cohort") %>%
   arrange(names_neat) 
 
@@ -228,10 +234,9 @@ cov_a.tab <- cov.tab %>%
                 preg_smk_NA)
 
 cov_b.tab <- cov.tab %>%
-  dplyr::select(names_neat, preg_ht_1, preg_ht_NA, prepreg_bmi_u_f_1, 
-                prepreg_bmi_u_f_NA, prepreg_bmi_o_f_1, prepreg_bmi_o_f_NA, 
-                med_range_agebirth_m_y, missing_agebirth_m_y)
-
+  dplyr::select(names_neat, prepreg_bmi_u_f_1, prepreg_bmi_u_f_NA, 
+                prepreg_bmi_o_f_1, prepreg_bmi_o_f_NA, med_range_agebirth_m_y, 
+                missing_agebirth_m_y)
 
 write_csv(cov_a.tab, file = here("tables", "covariates_a.csv"))
 write_csv(cov_b.tab, file = here("tables", "covariates_b.csv"))
@@ -275,7 +280,7 @@ ht.tab <- descriptives$continuous %>%
          med_range_ht.5113, valid_n_ht.6544, med_range_ht.6544) %>%
   arrange(names_neat) 
 
-write_csv(ht.tab, path = here("tables", "height.csv"))
+write_csv(ht.tab, file = here("tables", "height.csv"))
 
 
 ################################################################################
@@ -294,7 +299,7 @@ wt.tab <- descriptives$continuous %>%
          med_range_wt.5113, valid_n_wt.6544, med_range_wt.6544) %>%
   arrange(names_neat) 
 
-write_csv(wt.tab, path = here("tables", "weight.csv"))
+write_csv(wt.tab, file = here("tables", "weight.csv"))
 
 
 ################################################################################
@@ -316,11 +321,87 @@ ages.tab <- descriptives$continuous %>%
          med_range_age_months.215) %>%
   arrange(names_neat) 
 
-write_csv(ages.tab, path = here("tables", "measurement_ages.csv"))
+write_csv(ages.tab, file = here("tables", "measurement_ages.csv"))
+
 
 ################################################################################
 # SENSITIVITY ANALYSES
 ################################################################################
+################################################################################
+# Table S11: GDM sensitivity 
+################################################################################
+
+## ---- Get estimates ----------------------------------------------------------
+gdm_sens <- preg_dia_slma.plotdata %>%
+  dplyr::select(cohort, age, est = beta, se, lowci = ci_5, uppci = ci_95)
+
+gdm_coh <- c("bib", "eden")
+
+gdm_quest <- gdm_sens %>% dplyr::filter(!cohort %in% gdm_coh & age != "14-17")
+gdm_blood <- gdm_sens %>% dplyr::filter(cohort %in% gdm_coh & age != "14-17")
+
+metaGroup <- function(x){
+  
+  x %>%
+    group_by(age) %>%
+    group_split %>%
+    map(function(x){
+      
+      meta <- rma.uni(yi = x$est, sei = x$se)
+      out <- tibble(
+        age = x$age[1],
+        est = meta$beta[1, 1],
+        lowci = meta$ci.lb,
+        uppci = meta$ci.ub)
+      
+      return(out)
+      
+    }) 
+}
+
+ages <- c("0-1", "2-3", "4-7", "8-13")
+
+gdm_quest.pdata <- metaGroup(gdm_quest) %>% 
+  bind_rows %>%
+  mutate(type = "quest")
+
+gdm_blood.pdata <- metaGroup(gdm_blood) %>% 
+  bind_rows %>%
+  mutate(type = "blood")
+
+gdm_ns <- ns_cat_all %>%
+  dplyr::filter(exposure == "p_d" & cohort != "combined" & age != "14-17") %>%
+  mutate(type = ifelse(cohort %in% gdm_coh, "blood", "quest")) %>%
+  group_by(type, category, age) %>%
+  group_split %>%
+  map(., ~mutate(., n = sum(count))) %>%
+  map(., ~slice(., 1)) %>%
+  map(., ~dplyr::select(., age, category, variable, n, type)) %>%
+  bind_rows %>%
+  dplyr::select(-variable) %>%
+  pivot_wider(
+    names_from = category, 
+    values_from = n) %>%
+  dplyr::rename(
+    unexposed = '0',
+    exposed = '1') %>%
+  arrange(desc(type), desc(age)) %>%
+  mutate(age = as.character(age))
+
+gdm_sens.tab <- bind_rows(gdm_blood.pdata, gdm_quest.pdata) %>%
+  left_join(., gdm_ns, by = c("age", "type")) %>%
+  mutate(across(est:uppci, ~round(., 2))) %>%
+  mutate(est = paste0(est, " (", lowci, ", ", uppci, ")")) %>%
+  dplyr::select(-lowci, -uppci) %>%
+  pivot_wider(
+    names_from = type,
+    values_from = c(exposed, unexposed, est)) %>%
+  dplyr::select(age, unexposed_quest, exposed_quest, est_quest, 
+                unexposed_blood, exposed_blood, est_blood) %>%
+  arrange(age)
+
+write_csv(gdm_sens.tab, file = here("tables", "gdm_sens_test.csv"))
+
 ################################################################################
 # Table S10: Sex & cohort
 ################################################################################
@@ -342,24 +423,33 @@ sensTab <- function(fit, vars, exp_name, type_name){
   }
 
 ## ---- Extract coefficients ---------------------------------------------------
-sens.ref <- tibble(
-  vars = c(
-    rep(list(c("edu_m2", "edu_m3")), 4), 
-    rep(list(c("area_dep2", "area_dep3")), 4), 
-    rep("ndvi300_preg_iqr_s", 4), 
-    rep("preg_dia1", 4)), 
-  exp_name = c(
-    rep("mat_ed", 4), 
-    rep("area_dep", 4), 
-    rep("ndvi", 4), 
-    rep("preg_dia", 4)), 
-  type_name = rep(c("main", "males", "females", "remove"), 4), 
-  data = c(
-    "mat_ed.fit", "mat_ed_m.fit", "mat_ed_f.fit", "mat_ed_remove.fit", 
-    "area_dep.fit", "area_dep_m.fit", "area_dep_f.fit", "area_dep_remove.fit", 
-    "ndvi.fit", "ndvi_m.fit", "ndvi_f.fit", "ndvi_remove.fit", 
-    "preg_dia.fit", "preg_dia_m.fit", "preg_dia_f.fit", "preg_dia_remove.fit"))
-                  
+mat_ed_sex.ref <- tibble(
+  vars = rep(c("edu_m2", "edu_m3"), each = 3), 
+  exp_name = rep("edu_m", 6), 
+  type_name = rep(c("main", "males", "females"), 2), 
+  data = rep(c("mat_ed.fit", "mat_ed_m.fit", "mat_ed_f.fit"), 2))
+    
+area_dep_sex.ref <- tibble(
+  vars = rep(c("area_dep2", "area_dep3"), each = 3), 
+  exp_name = rep("area_dep", 6), 
+  type_name = rep(c("main", "males", "females"), 2), 
+  data = rep(c("area_dep.fit", "area_dep_m.fit", "area_dep_f.fit"), 2))
+
+ndvi_sex.ref <- tibble(
+  vars = rep("ndvi300_preg_iqr_c", 3), 
+  exp_name = rep("ndvi", 3), 
+  type_name = c("main", "males", "females"), 
+  data = c("ndvi.fit", "ndvi_m.fit", "ndvi_f.fit"))
+
+preg_dia_sex.ref <- tibble(
+  vars = rep("preg_dia1", 3), 
+  exp_name = rep("preg_dia", 3), 
+  type_name = c("main", "males", "females"), 
+  data = c("preg_dia.fit", "preg_dia_m.fit", "preg_dia_f.fit"))
+                
+sens.ref <- bind_rows(mat_ed_sex.ref, area_dep_sex.ref, ndvi_sex.ref, 
+                      preg_dia_sex.ref)
+  
 sens_coef <- sens.ref %>%
   pmap(function(vars, exp_name, type_name, data){
     
@@ -390,15 +480,21 @@ sens_k_n <- sens.ref$data %>%
   bind_rows(.id = "model") %>%
   separate(model, into = c("exposure", "type"), sep = "\\.") 
 
+sens.tab %>%
+  print(n = Inf)
+
 ## ---- Put together final table -----------------------------------------------
 sens.tab <- left_join(sens_coef, sens_k_n, by = c("exposure", "type", "age")) %>%
-  dplyr::select(age, variable, exposure, est, n, k, type) %>%
+  unique() %>%
+  dplyr::select(exposure, age, variable, est, n, k, type) %>%
   pivot_wider(
     names_from = type, 
     values_from = c(est, k, n)) %>%
   dplyr::select(exposure, age, variable, k_main, n_main, est_main, k_males, 
-                n_males, est_males, k_females, n_females, est_females, k_remove, 
-                n_remove, est_remove) %>%
+                n_males, est_males, k_females, n_females, est_females) %>%
+  mutate(exposure = factor(
+    exposure, levels = c("edu_m", "area_dep", "ndvi", "preg_dia"), 
+    ordered = T)) %>%
   arrange(exposure, variable)
 
 write_csv(sens.tab, file = here("tables", "sensitivity.csv"))
@@ -419,7 +515,7 @@ area_dep_int.tab <- area_dep_int.fit$ipd %>%
 ndvi_int.tab <- ndvi_int.fit$ipd %>% 
   map(dh.lmTab, type = "glm_ipd", direction = "wide", ci_format = "separate") %>%
   bind_rows(.id = "age") %>%
-  dplyr::filter(variable == "ndvi300_preg_iqr_s:sex2")
+  dplyr::filter(variable == "ndvi300_preg_iqr_c:sex2")
 
 preg_dia_int.tab <- preg_dia_int.fit$ipd %>% 
   map(dh.lmTab, type = "glm_ipd", direction = "wide", ci_format = "separate") %>%
@@ -436,9 +532,18 @@ write_csv(
   x = interactions.tab,
   file = here("tables", "interactions.csv"))
 
+write_csv(
+  x = preg_dia_int.tab,
+  file = here("tables", "dia_interactions.csv"))
+preg_dia_int.tab
+
 ################################################################################
 # Ethnicity
 ################################################################################
+eth_sub.mod %>% 
+  dplyr::filter(age == "bmi_215" & exposure == "edu_m") %>%
+  pull(main_fit)
+
 
 ## ---- Attach fit objects to reference object ---------------------------------
 eth_sub.mod <- eth_sub.mod %>%
@@ -448,7 +553,7 @@ eth_sub.mod <- eth_sub.mod %>%
     exp_var = case_when(
       exposure == "edu_m" ~ list(c("edu_m2", "edu_m3")), 
       exposure == "area_dep" ~ list(c("area_dep2", "area_dep3")), 
-      exposure == "ndvi300_preg_iqr_s" ~ list("ndvi300_preg_iqr_s"), 
+      exposure == "ndvi300_preg_iqr_c" ~ list("ndvi300_preg_iqr_c"), 
       exposure == "preg_dia" ~ list("preg_dia1"))
   )
 
@@ -504,7 +609,7 @@ eth_coefs <- eth_eth.tab %>%
   bind_rows(.id = "model") %>%
   separate(model, into = c("age", "exposure"), sep = "\\.")
 
-n_k_main <- eth_eth.tab %>%
+n_k_eth <- eth_eth.tab %>%
   pmap(function(exposure, coh, fit, age, ...){
     
     tibble(
@@ -515,7 +620,7 @@ n_k_main <- eth_eth.tab %>%
     
   }) %>% bind_rows
 
-eth_eth_out.tab <- left_join(eth_coefs, n_k_main, by = c("exposure", "age")) %>%
+eth_eth_out.tab <- left_join(eth_coefs, n_k_eth, by = c("exposure", "age")) %>%
   mutate(adjust = "ethnicity")
 
 eth_sens.tab <- bind_rows(eth_main_out.tab, eth_eth_out.tab) %>%
@@ -530,38 +635,288 @@ write_csv(
   x = eth_sens.tab,
   file = here("tables", "ethnicity_sens.csv"))
 
-
-
-
-
-
 ################################################################################
-# Removeing DNBC and MoBa  
+# Removing DNBC and MoBa  
 ################################################################################
+meta_sens <- function(model, vars){
+
+dh.lmTab(
+  model = model, 
+  type = "glm_ipd", 
+  direction = "wide", 
+  ci_format = "separate") %>%
+    dplyr::filter(variable %in% vars)
+}
+
+## ---- Maternal education -----------------------------------------------------
+remove_1 <- mat_ed_remove.fit$ipd %>%
+  map(~meta_sens(model = ., vars = c("edu_m2", "edu_m3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "mat_ed", type = "excluded")
+
+all_1 <- mat_ed.fit$ipd %>%
+  map(~meta_sens(model = ., vars = c("edu_m2", "edu_m3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "mat_ed", type = "all")
+
+## ---- Area deprivation -------------------------------------------------------
+remove_2 <- area_dep_remove.fit$ipd %>%
+  map(~meta_sens(model = ., vars = c("area_dep2", "area_dep3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "area_dep", type = "excluded")
+
+all_2 <- area_dep.fit$ipd %>%
+  map(~meta_sens(model = ., vars = c("area_dep2", "area_dep3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "area_dep", type = "all")
+
+## ---- NDVI -------------------------------------------------------------------
+remove_3 <- ndvi_remove.fit$ipd %>%
+  map(~meta_sens(model = ., vars = "ndvi300_preg_iqr_c")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "ndvi", type = "excluded")
+
+all_3 <- ndvi.fit$ipd %>%
+  map(~meta_sens(model = ., vars = "ndvi300_preg_iqr_c")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "ndvi", type = "all")
+
+## ---- Pregnancy diabetes -----------------------------------------------------
+remove_4 <- preg_dia_remove.fit$ipd %>%
+  map(~meta_sens(model = ., vars = "preg_dia1")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "preg_dia", type = "excluded")
+
+all_4 <- preg_dia.fit$ipd %>%
+  map(~meta_sens(model = ., vars = "preg_dia1")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "preg_dia", type = "all")
+
+## ---- Put together -----------------------------------------------------------
+excluded.tab <- bind_rows(remove_1, all_1, remove_2, all_2, remove_3, all_3, 
+                          remove_4, all_4) %>%
+  mutate(est = paste0(est, " (", lowci, ", ", uppci, ")")) %>%
+  dplyr::select(variable, age, est, type, n_obs, exposure) %>%
+  pivot_wider(
+    names_from = type, 
+    values_from = c(n_obs, est)) %>%
+  dplyr::filter(age != "bmi_215") %>%
+  mutate(exposure = factor(
+    exposure, 
+    levels = c("mat_ed", "area_dep", "ndvi", "preg_dia"), 
+    ordered = TRUE)) %>%
+  mutate(age = factor(
+    age, 
+    levels = c("bmi_24", "bmi_48", "bmi_96", "bmi_168"), 
+    ordered = TRUE)) %>%
+  dplyr::select(exposure, variable, age,  n_obs_all, est_all, n_obs_excluded, 
+                est_excluded) %>%
+  arrange(exposure, variable, age)
+
+write_csv(excluded.tab, here("tables", "dnbc_moba_exc.csv"))
+
+
+
+
+%>%
+  mutate(coef = paste0(est, " (", low_ci))
+
+
+
+
+model = mat_ed_remove.fit$ipd[[1]]
+vars = c("edu_m2", "edu_m3")
+
+exc_coh <- c("dnbc", "moba")
+
+## ---- Get estimates ----------------------------------------------------------
+ndvi_exclude <- ndvi_slma.plotdata %>%
+  mutate(exposure = "ndvi")
+
+mat_ed_exclude <- mat_ed_slma.plotdata %>%
+  mutate(exposure = "edu_m") %>%
+  mutate(category = ifelse(variable == "Low education (ref = high)", "3", "2"))
+
+exc_sens <- bind_rows(mat_ed_exclude, area_dep_slma.plotdata, ndvi_exclude, 
+            preg_dia_slma.plotdata) %>%
+  dplyr::select(cohort, age, est = beta, se, lowci = ci_5, uppci = ci_95, 
+                exposure, ref, count)
+
+inc_coh.tab <- exc_sens %>% dplyr::filter(!cohort %in% exc_coh & age != "14-17")
+exc_coh.tab <- exc_sens %>% dplyr::filter(cohort %in% exc_coh & age != "14-17")
+
+inc_keys <- inc_coh.tab %>%
+  group_by(age, exposure) %>%
+  group_keys
+
+exc_keys <- exc_coh.tab %>%
+  group_by(age, exposure) %>%
+  group_keys
+
+inc.tab <- inc_coh.tab %>%
+  group_by(age, exposure) %>%
+  group_split %>%
+  set_names(paste0(inc_keys$age, "z", inc_keys$exposure)) %>%
+  map(., metaGroup) %>%
+  map(function(x){x[[1]]}) %>%
+  bind_rows(.id = "analysis") %>%
+  mutate(sens_type = "included")
+
+exc.tab <- exc_coh.tab %>%
+  group_by(age, exposure) %>%
+  group_split %>%
+  set_names(paste0(exc_keys$age, "z", exc_keys$exposure)) %>%
+  map(., metaGroup) %>%
+  map(function(x){x[[1]]}) %>%
+  bind_rows(.id = "analysis") %>%
+  mutate(sens_type = "excluded")
+
+## ---- Get Ns -----------------------------------------------------------------
+inc_ns <- inc_coh.tab %>%
+  mutate(n = ref+count) %>%
+  group_by(age, exposure) %>%
+  group_split %>%
+  set_names(paste0(inc_keys$age, "z", inc_keys$exposure)) %>%
+  map(., ~mutate(., test = sum(n))) %>%
+  bind_rows(.id = "analysis") %>%
+  mutate(sens_type = "included") %>%
+  dplyr::select(analysis, test, sens_type) %>%
+  unique
+
+
+  dplyr::select(cohort, )
+
+
+
+
+
+inc_n <- sens.ref$data %>%
+  map(function(x){
+    
+    eval(as.symbol(x))$ipd %>%
+      map(function(y){
+        
+        tibble(
+          k = length(y$disclosure.risk), 
+          n = y$Nvalid)
+        
+      }) 
+    
+  }) %>% 
+  set_names(paste0(sens.ref$exp_name, ".", sens.ref$type_name)) %>%
+  map(., ~bind_rows(., .id = "age")) %>%
+  bind_rows(.id = "model") %>%
+  separate(model, into = c("exposure", "type"), sep = "\\.") 
+
+
+
+
+cohort_sens.tab <- bind_rows(inc.tab, exc.tab) %>%
+  separate(analysis, sep = "z", into = c("age", "exposure")) %>%
+  mutate(exposure = factor(
+    exposure, 
+    levels = c("edu_m", "a_d", "ndvi", "p_d"), 
+    ordered = TRUE)) %>%
+  mutate(age = factor(
+    age, 
+    levels = c("0-1", "2-3", "4-7", "8-13"), 
+    ordered = TRUE)) %>%
+  arrange(exposure, age) %>%
+  mutate(across(c(est, lowci, uppci), ~round(., 2))) %>%
+  mutate(est = paste0(est, " (", lowci, ", ", uppci, ")")) %>%
+  dplyr::select 
+
+  
+  metaGroup(gdm_quest) %>% 
+  bind_rows %>%
+  mutate(type = "quest")
+
+gdm_blood.pdata <- metaGroup(gdm_blood) %>% 
+  bind_rows %>%
+  mutate(type = "blood")
+
+
+ages <- c("0-1", "2-3", "4-7", "8-13")
+
+
+gdm_ns <- ns_cat_all %>%
+  dplyr::filter(exposure == "p_d" & cohort != "combined" & age != "14-17") %>%
+  mutate(type = ifelse(cohort %in% gdm_coh, "blood", "quest")) %>%
+  group_by(type, category, age) %>%
+  group_split %>%
+  map(., ~mutate(., n = sum(count))) %>%
+  map(., ~slice(., 1)) %>%
+  map(., ~dplyr::select(., age, category, variable, n, type)) %>%
+  bind_rows %>%
+  dplyr::select(-variable) %>%
+  pivot_wider(
+    names_from = category, 
+    values_from = n) %>%
+  dplyr::rename(
+    unexposed = '0',
+    exposed = '1') %>%
+  arrange(desc(type), desc(age)) %>%
+  mutate(age = as.character(age))
+
+gdm_sens.tab <- bind_rows(gdm_blood.pdata, gdm_quest.pdata) %>%
+  left_join(., gdm_ns, by = c("age", "type")) %>%
+  mutate(across(est:uppci, ~round(., 2))) %>%
+  mutate(est = paste0(est, " (", lowci, ", ", uppci, ")")) %>%
+  dplyr::select(-lowci, -uppci) %>%
+  pivot_wider(
+    names_from = type,
+    values_from = c(exposed, unexposed, est)) %>%
+  dplyr::select(age, unexposed_quest, exposed_quest, est_quest, 
+                unexposed_blood, exposed_blood, est_blood) %>%
+  arrange(age)
+
+
+
+
+
 
 ## ---- Table of coefficients --------------------------------------------------
 mat_ed_remove.tab <- mat_ed_remove.fit[[1]] %>% 
-  map(dh.glmTab, type = "ipd") %>%
-  reduce(left_join, by = "variable") %>%
-  filter(variable %in% c("edu_m2", "edu_m3")) 
-
+  map(
+    dh.lmTab, 
+      type = "glm_ipd", 
+      direction = "wide", 
+    ci_format = "separate") %>%
+  bind_rows(.id = "outcome") %>%
+  dplyr::filter(variable %in% c("edu_m2", "edu_m3")) 
+  
 area_dep_remove.tab <- area_dep_remove.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
-  reduce(left_join, by = "variable") %>%
+  map(
+    dh.lmTab, 
+    type = "glm_ipd", 
+    direction = "wide", 
+    ci_format = "separate") %>%
+  bind_rows(.id = "outcome") %>%
   filter(variable %in% c("area_dep2", "area_dep3")) 
 
 ndvi_remove.tab <- ndvi_remove.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
-  reduce(left_join, by = "variable") %>%
-  filter(variable == "ndvi") 
+  map(
+    dh.lmTab, 
+    type = "glm_ipd", 
+    direction = "wide", 
+    ci_format = "separate") %>%
+  bind_rows(.id = "outcome") %>%
+  filter(variable == "ndvi300_preg_iqr_c") 
 
 preg_dia_remove.tab <- preg_dia_remove.fit[[1]] %>%
-  map(dh.glmTab, type = "ipd") %>%
-  reduce(left_join, by = "variable") %>%
+  map(
+    dh.lmTab, 
+    type = "glm_ipd", 
+    direction = "wide", 
+    ci_format = "separate") %>%
+  bind_rows(.id = "outcome") %>%
   filter(variable == "preg_dia1") 
 
 ipd_remove.tab <- bind_rows(mat_ed_remove.tab, area_dep_remove.tab, 
                             ndvi_remove.tab, preg_dia_remove.tab)
+
+mat_ed_ipd.plotdata
+
 
 colnames(ipd_remove.tab) <- c(
   "variable", "age_0_24", "age_25_48", "age_49_96", "age_96_168", "age_169_215")
@@ -1113,4 +1468,108 @@ ggsave(
   h = 10, w = 16, units="cm", dpi=1200,
   device="png")
 
+################################################################################
+# AJE REVIEWER ROUND 1  
+################################################################################
+################################################################################
+# Number of observations per subject  
+################################################################################
+n_obs_per_child <- n_obs.stats$categorical %>%
+  dplyr::filter(cohort == "combined") %>%
+  dplyr::select(variable, category, value) %>%
+  dplyr::filter(!is.na(category) & category != 0) %>%
+  mutate(variable = factor(
+    variable,
+    levels = c("edu_m_n", "a_d_n", "n_d_n", "p_d_n"), 
+    ordered = TRUE)) %>%
+  arrange(variable)
 
+write_csv(n_obs_per_child, file = here("tables", "n_obs_child.csv"))
+
+# Need to check Ns, but I think NAs are where age band didn't exist in study, 
+# and 0s are where the age band existed but it wasn't a complete case
+
+################################################################################
+# Compare all available observations vs sample at oldest age  
+################################################################################
+
+## ---- Coefficients -----------------------------------------------------------
+sel_1 <- mat_ed_sel.fit %>%
+  map(~meta_sens(model = ., vars = c("edu_m2", "edu_m3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "mat_ed", type = "oldest_only")
+
+sel_2 <- area_dep_sel.fit %>%
+  map(~meta_sens(model = ., vars = c("area_dep2", "area_dep3"))) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "area_dep", type = "oldest_only")
+
+sel_3 <- ndvi_sel.fit %>%
+  map(~meta_sens(model = ., vars = "ndvi300_preg_iqr_c")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "ndvi", type = "oldest_only")
+
+sel_4 <- preg_dia_sel.fit %>%
+  map(~meta_sens(model = ., vars = "preg_dia1")) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = "preg_dia", type = "oldest_only")
+
+
+## ---- N included cohorts -----------------------------------------------------
+ipdN <- function(fit, exp_name){
+
+fit %>%
+  map(function(x){
+    tibble(
+      cohort_n = length(dimnames(x$disclosure.risk)[[1]]))
+      }) %>%
+  bind_rows(.id = "age") %>%
+  mutate(exposure = exp_name)
+  
+}
+    
+
+## Full
+mat_ed_n <- mat_ed.fit$ipd %>% selN("mat_ed")
+area_dep_n <- area_dep.fit$ipd %>% selN("area_dep")
+ndvi_n <- ndvi.fit$ipd %>% selN("ndvi")
+preg_dia_n <- preg_dia.fit$ipd %>% selN("preg_dia")
+
+all_ns <- bind_rows(mat_ed_n, area_dep_n, ndvi_n, preg_dia_n) %>%
+  mutate(type = "all")
+
+## Selection
+mat_ed_sel_n <- mat_ed_sel.fit %>% selN("mat_ed")
+area_dep_sel_n <- area_dep_sel.fit %>% selN("area_dep")
+ndvi_sel_n <- ndvi_sel.fit %>% selN("ndvi")
+preg_dia_sel_n <- preg_dia_sel.fit %>% selN("preg_dia")
+
+sel_ns <- bind_rows(mat_ed_sel_n, area_dep_sel_n, ndvi_sel_n, preg_dia_sel_n) %>%
+  mutate(type = "oldest_only")
+
+sel_sens_ns <- bind_rows(all_ns, sel_ns)
+
+selection.tab <- bind_rows(sel_1, all_1, sel_2, all_2, sel_3, all_3, 
+                          sel_4, all_4) %>%
+  left_join(., sel_sens_ns, by = c("age", "exposure", "type")) %>%
+  mutate(est = paste0(est, " (", lowci, ", ", uppci, ")")) %>%
+  dplyr::select(variable, age, est, type, n_obs, cohort_n, exposure) %>%
+  pivot_wider(
+    names_from = type, 
+    values_from = c(n_obs, est, cohort_n)) %>%
+  dplyr::filter(age != "bmi_215") %>%
+  mutate(exposure = factor(
+    exposure, 
+    levels = c("mat_ed", "area_dep", "ndvi", "preg_dia"), 
+    ordered = TRUE)) %>%
+  mutate(age = factor(
+    age, 
+    levels = c("bmi_24", "bmi_48", "bmi_96", "bmi_168"), 
+    ordered = TRUE)) %>%
+  dplyr::select(exposure, variable, age,  cohort_n_all, n_obs_all, est_all, 
+                cohort_n_oldest_only, n_obs_oldest_only, est_oldest_only) %>%
+  arrange(exposure, variable, age)
+
+write_csv(selection.tab, file = here("tables", "selection_bias.csv"))
+
+ds.dim()

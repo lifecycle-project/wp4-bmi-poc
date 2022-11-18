@@ -93,8 +93,7 @@ mat_ed_miss.fit %>%
     title = "Odds ratio for being complete cases per unit change in BMI z-score",
     x_limits = c(0.6, 1.4), 
     axis_limits = c(0.8, 1.2), 
-    type = "logistic"
-  )
+    type = "logistic")
 
 dev.off()
 
@@ -114,8 +113,7 @@ area_dep_miss.fit %>%
     title = "Odds ratio for being complete cases per unit change in BMI z-score",
     x_limits = c(0.6, 1.4), 
     axis_limits = c(0.8, 1.2), 
-    type = "logistic"
-  )
+    type = "logistic")
 
 dev.off()
 
@@ -135,8 +133,7 @@ ndvi_miss.fit %>%
     title = "Odds ratio for being complete cases per unit change in BMI z-score",
     x_limits = c(0.6, 1.4), 
     axis_limits = c(0.8, 1.2), 
-    type = "logistic"
-  )
+    type = "logistic")
 
 dev.off()
 
@@ -265,7 +262,6 @@ preg_dia_desc.plot <- descriptives$categorical %>%
   theme_std +  
   theme_word + 
   theme_bar_stack
-
 
 ## ---- Save plots -------------------------------------------------------------
 ggsave(
@@ -410,11 +406,42 @@ ns_cat_all <- bind_rows(ns_comb, ns_coh) %>%
 ################################################################################
 # Prepare IPD plots
 ################################################################################
+## Get reference ns
+refN <- function(ref_name, ref_tab = ns_cat_all){
+  
+  ref_tab %>%
+    dplyr::filter(variable == ref_name & cohort == "combined") %>%
+    dplyr::rename(ref = count) %>%
+    dplyr::select(age, ref)
+  
+}
 
-## ---- Maternal education -----------------------------------------------------
-mat_ed_ipd.plotdata <- mat_ed.fit$ipd %>%
+
+
+################################################################################
+# Maternal education  
+################################################################################
+
+
+
+
+## ---- Main results -----------------------------------------------------------
+mat_ed_ipd_main.pdata <- mat_ed.fit$ipd %>%
   map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
   bind_rows(.id = "age") %>%
+  mutate(type = "main")
+  
+
+## ---- Sensitivity ------------------------------------------------------------
+mat_ed_ipd_sens.pdata <- mat_ed_sel.fit %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  mutate(type = "sens")
+
+
+
+## ---- Combined ---------------------------------------------------------------
+mat_ed_ipd.pdata <- bind_rows(mat_ed_ipd_main.pdata, mat_ed_ipd_sens.pdata) %>%
   prepCatPlotdata(
     lev_1_name = "edu_m2",
     lev_1_lab = "Medium education (ref = high)",
@@ -422,20 +449,10 @@ mat_ed_ipd.plotdata <- mat_ed.fit$ipd %>%
     lev_2_lab = "Low education (ref = high)") %>%
   arrange(desc(variable), desc(age)) %>%
   left_join(., ns_cat_all %>% dplyr::filter(cohort == "combined"), 
-            ord_cat_dum, by = c("age", "variable"))
-
-## Get reference ns
-refN <- function(ref_name){
-  
-  ns_cat_all %>%
-    dplyr::filter(variable == ref_name & cohort == "combined") %>%
-    dplyr::rename(ref = count) %>%
-    dplyr::select(age, ref)
-  
-}
-
-mat_ed_ipd.plotdata <- mat_ed_ipd.plotdata %>%
+            ord_cat_dum, by = c("age", "variable")) %>%
   left_join(., refN("High education (ref)"), by = "age")
+
+
 
 ## ---- Area deprivation -------------------------------------------------------
 area_dep_ipd.plotdata <- area_dep.fit$ipd %>%
@@ -459,7 +476,7 @@ area_dep_ipd.plotdata <- area_dep_ipd.plotdata %>%
 ndvi_ipd.plotdata <- ndvi.fit$ipd %>% 
   map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
   bind_rows(.id = "age") %>%
-  dplyr::filter(variable == "ndvi300_preg_iqr_s") %>%
+  dplyr::filter(variable == "ndvi300_preg_iqr_c") %>%
   mutate(
     age = factor(
       age, 
@@ -502,14 +519,14 @@ png(
 par(mar=c(5,0,0,0))
 
 forest(
-  x = mat_ed_ipd.plotdata %>% pull(est), 
-  ci.lb = mat_ed_ipd.plotdata %>% pull(lowci),
-  ci.ub = mat_ed_ipd.plotdata %>% pull(uppci), 
-  slab = mat_ed_ipd.plotdata %>% pull(age), 
+  x = mat_ed_ipd.pdata %>% pull(est), 
+  ci.lb = mat_ed_ipd.pdata %>% pull(lowci),
+  ci.ub = mat_ed_ipd.pdata %>% pull(uppci), 
+  slab = mat_ed_ipd.pdata %>% pull(age), 
   xlab = "Difference in childhood BMI by category of maternal education", 
   ilab =  cbind(
-    mat_ed_ipd.plotdata %>% pull(ref),
-    mat_ed_ipd.plotdata %>% pull(count),
+    mat_ed_ipd.pdata %>% pull(ref),
+    mat_ed_ipd.pdata %>% pull(count),
     mat_ed.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
   ilab.xpos = c(-2.5, -1.6, -0.7),
   cex = 0.8, 
@@ -685,7 +702,7 @@ ndvi.meta <- ndvi.fit$slma %>%
   map(
     ~dh.metaManual(
       model = ., 
-      method = "reml")$model["ndvi300_preg_iqr_s"])
+      method = "reml")$model["ndvi300_preg_iqr_c"])
 
 ## ---- Gestational diabetes ---------------------------------------------------
 preg_dia.meta <- preg_dia.fit$slma %>%
@@ -713,8 +730,7 @@ polyWrap <- function(meta, row, cex = 0.6){
 ################################################################################
 # Prepare data  
 ################################################################################
-obj = mat_ed.fit$slma[[5]] 
-mod = mat_ed.mod[[5]]
+
 ## ---- Function ---------------------------------------------------------------
 forestDataSLMA <- function(obj, mod){
   
@@ -775,8 +791,8 @@ mat_ed_slma.plotdata <- list(mat_ed.fit$slma, mat_ed.mod) %>%
     lev_1_lab = "Medium education (ref = high)",
     lev_2_name = "edu_m3",
     lev_2_lab = "Low education (ref = high)") %>%
-  arrange(desc(variable), desc(age)) %>%
-  left_join(., ref_tab, by = "cohort") %>%
+    arrange(desc(variable), desc(age)) %>%
+    left_join(., ref_tab, by = "cohort") %>%
   left_join(., ns_cat_all)
 
 refNCoh <- function(ref_name){
@@ -814,7 +830,7 @@ area_dep_slma.plotdata <- area_dep_slma.plotdata %>%
 ndvi_slma.plotdata <- list(ndvi.fit$slma, ndvi.mod) %>% 
   pmap(forestDataSLMA) %>%
   bind_rows(.id = "age") %>%
-  dplyr::filter(variable == "ndvi300_preg_iqr_s") %>%
+  dplyr::filter(variable == "ndvi300_preg_iqr_c") %>%
   mutate(
     age = factor(
       age, 
@@ -826,7 +842,7 @@ ndvi_slma.plotdata <- list(ndvi.fit$slma, ndvi.mod) %>%
 
 
 ## ---- Pregnancy diabetes -----------------------------------------------------
-preg_dia_slma.plotdata <-list(preg_dia.fit$slma, preg_dia.mod) %>% 
+preg_dia_slma.plotdata <- list(preg_dia.fit$slma, preg_dia.mod) %>% 
   pmap(forestDataSLMA) %>%
   bind_rows(.id = "age") %>%
   dplyr::filter(variable == "preg_dia1" & cohort != "combined") %>%
@@ -842,6 +858,8 @@ preg_dia_slma.plotdata <-list(preg_dia.fit$slma, preg_dia.mod) %>%
 ## Get reference ns
 preg_dia_slma.plotdata <- preg_dia_slma.plotdata %>%
   left_join(., refNCoh("No GDM (ref)"), by = c("age", "cohort"))
+
+save.image("15_nov_22.RData")
 
 ################################################################################
 # Plots  
@@ -895,32 +913,30 @@ forest(
   header = c("Cohort", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3.5),
-  ylim = c(0, 85),
+  ylim = c(0, 89),
   alim = c(-0.5, 2.5), 
   steps = 7, 
   digits = c(2, 2), 
-  rows = c(81:66, 62:48, 44:29, 25:9, 5:1))
+  rows = c(85:69, 65:50, 46:30, 26:9, 5:1))
   
+text(-2.5, 88, "High education", cex = 0.6, font = 2)
+text(-1.6, 88, "Med education", cex = 0.6, font = 2)
+text(-0.7, 88, "Study weight", cex = 0.6, font = 2)
+text(-2.05, 89, "N participants", cex = 0.6, font = 2)
 
-text(-2.5, 84, "High education", cex = 0.6, font = 2)
-text(-1.6, 84, "Med education", cex = 0.6, font = 2)
-text(-0.7, 84, "Study weight", cex = 0.6, font = 2)
-text(-2.05, 85, "N participants", cex = 0.6, font = 2)
-
-text(-3.18, 82.3, "0-1 years", cex = 0.6, font = 2)
-text(-3.18, 63.3, "2-3 years", cex = 0.6, font = 2)
-text(-3.18, 45.3, "4-7 years", cex = 0.6, font = 2)
-text(-3.15, 26.3, "8-13 years", cex = 0.6, font = 2)
+text(-3.18, 86.3, "0-1 years", cex = 0.6, font = 2)
+text(-3.18, 66.3, "2-3 years", cex = 0.6, font = 2)
+text(-3.18, 47.3, "4-7 years", cex = 0.6, font = 2)
+text(-3.15, 27.3, "8-13 years", cex = 0.6, font = 2)
 text(-3.13, 6.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = mat_ed.meta$bmi_24$edu_m2, row = 65)
-polyWrap(meta = mat_ed.meta$bmi_48$edu_m2, row = 47)
-polyWrap(meta = mat_ed.meta$bmi_96$edu_m2, row = 28)
+polyWrap(meta = mat_ed.meta$bmi_24$edu_m2, row = 68)
+polyWrap(meta = mat_ed.meta$bmi_48$edu_m2, row = 49)
+polyWrap(meta = mat_ed.meta$bmi_96$edu_m2, row = 29)
 polyWrap(meta = mat_ed.meta$bmi_168$edu_m2, row = 8)
 polyWrap(meta = mat_ed.meta$bmi_215$edu_m2, row = 0)
 
 dev.off()
-
 
 ## ---- Low vs high ------------------------------------------------------------
 mat_ed_slma_low.plotdata <- mat_ed_slma.plotdata %>% 
@@ -952,26 +968,26 @@ forest(
   header = c("Cohort", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3.5),
-  ylim = c(0, 85),
+  ylim = c(0, 89),
   alim = c(-0.5, 2.5), 
   steps = 7, 
   digits = c(2, 2), 
-  rows = c(81:66, 62:48, 44:29, 25:9, 5:1))
+  rows = c(85:69, 65:50, 46:30, 26:9, 5:1))
 
-text(-2.5, 84, "High education", cex = 0.6, font = 2)
-text(-1.6, 84, "Low education", cex = 0.6, font = 2)
-text(-0.7, 84, "Study weight", cex = 0.6, font = 2)
-text(-2.05, 85, "N participants", cex = 0.6, font = 2)
+text(-2.5, 88, "High education", cex = 0.6, font = 2)
+text(-1.6, 88, "Low education", cex = 0.6, font = 2)
+text(-0.7, 88, "Study weight", cex = 0.6, font = 2)
+text(-2.05, 89, "N participants", cex = 0.6, font = 2)
 
-text(-3.18, 82.3, "0-1 years", cex = 0.6, font = 2)
-text(-3.18, 63.3, "2-3 years", cex = 0.6, font = 2)
-text(-3.18, 45.3, "4-7 years", cex = 0.6, font = 2)
-text(-3.15, 26.3, "8-13 years", cex = 0.6, font = 2)
+text(-3.18, 86.3, "0-1 years", cex = 0.6, font = 2)
+text(-3.18, 66.3, "2-3 years", cex = 0.6, font = 2)
+text(-3.18, 47.3, "4-7 years", cex = 0.6, font = 2)
+text(-3.15, 27.3, "8-13 years", cex = 0.6, font = 2)
 text(-3.13, 6.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = mat_ed.meta$bmi_24$edu_m3, row = 65)
-polyWrap(meta = mat_ed.meta$bmi_48$edu_m3, row = 47)
-polyWrap(meta = mat_ed.meta$bmi_96$edu_m3, row = 28)
+polyWrap(meta = mat_ed.meta$bmi_24$edu_m3, row = 68)
+polyWrap(meta = mat_ed.meta$bmi_48$edu_m3, row = 49)
+polyWrap(meta = mat_ed.meta$bmi_96$edu_m3, row = 29)
 polyWrap(meta = mat_ed.meta$bmi_168$edu_m3, row = 8)
 polyWrap(meta = mat_ed.meta$bmi_215$edu_m3, row = 0)
 
@@ -995,7 +1011,7 @@ k_age_ad <- area_dep_slma_med.plotdata %>%
 png(
   file = here("figures", "area_dep_slma_med_forest.png"), 
   width = word_full, 
-  height = 15, 
+  height = 25, 
   units = "cm",
   res = 300)
 
@@ -1018,26 +1034,26 @@ forest(
   header = c("Cohort", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 4),
-  ylim = c(0, 54),
+  ylim = c(0, 58),
   alim = c(-0.5, 2.5), 
   steps = 9, 
   digits = c(2, 2), 
-  rows = c(49:41, 37:30, 26:18, 14:6, 2:1))
+  rows = c(53:44, 40:32, 28:19, 15:6, 2:1))
 
-text(-2.5, 53, "Low deprivation", cex = 0.6, font = 2)
-text(-1.6, 53, "Med deprivation", cex = 0.6, font = 2)
-text(-0.7, 53, "Study weight", cex = 0.6, font = 2)
-text(-2.05, 54, "N participants", cex = 0.6, font = 2)
+text(-2.5, 57, "Low deprivation", cex = 0.6, font = 2)
+text(-1.6, 57, "Med deprivation", cex = 0.6, font = 2)
+text(-0.7, 57, "Study weight", cex = 0.6, font = 2)
+text(-2.05, 58, "N participants", cex = 0.6, font = 2)
 
-text(-3.15, 50.3, "0-1 years", cex = 0.6, font = 2)
-text(-3.15, 38.3, "2-3 years", cex = 0.6, font = 2)
-text(-3.15, 27.3, "4-7 years", cex = 0.6, font = 2)
-text(-3.12, 15.3, "8-13 years", cex = 0.6, font = 2)
+text(-3.15, 54.3, "0-1 years", cex = 0.6, font = 2)
+text(-3.15, 41.3, "2-3 years", cex = 0.6, font = 2)
+text(-3.15, 29.3, "4-7 years", cex = 0.6, font = 2)
+text(-3.12, 16.3, "8-13 years", cex = 0.6, font = 2)
 text(-3.10, 3.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = area_dep.meta$bmi_24$area_dep2, row = 40)
-polyWrap(meta = area_dep.meta$bmi_48$area_dep2, row = 29)
-polyWrap(meta = area_dep.meta$bmi_96$area_dep2, row = 17)
+polyWrap(meta = area_dep.meta$bmi_24$area_dep2, row = 43)
+polyWrap(meta = area_dep.meta$bmi_48$area_dep2, row = 31)
+polyWrap(meta = area_dep.meta$bmi_96$area_dep2, row = 18)
 polyWrap(meta = area_dep.meta$bmi_168$area_dep2, row = 5)
 polyWrap(meta = area_dep.meta$bmi_215$area_dep2, row = 0)
 
@@ -1051,7 +1067,7 @@ area_dep_slma_high.plotdata <- area_dep_slma.plotdata %>%
 png(
   file = here("figures", "area_dep_slma_high_forest.png"), 
   width = word_full, 
-  height = 15, 
+  height = 25, 
   units = "cm",
   res = 300)
 
@@ -1074,26 +1090,26 @@ forest(
   header = c("Cohort", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 4),
-  ylim = c(0, 54),
+  ylim = c(0, 58),
   alim = c(-0.5, 2.5), 
   steps = 9, 
   digits = c(2, 2), 
-  rows = c(49:41, 37:30, 26:18, 14:6, 2:1))
+  rows = c(53:44, 40:32, 28:19, 15:6, 2:1))
 
-text(-2.5, 53, "Low deprivation", cex = 0.6, font = 2)
-text(-1.6, 53, "High deprivation", cex = 0.6, font = 2)
-text(-0.7, 53, "Study weight", cex = 0.6, font = 2)
-text(-2.05, 54, "N participants", cex = 0.6, font = 2)
+text(-2.5, 57, "Low deprivation", cex = 0.6, font = 2)
+text(-1.6, 57, "High deprivation", cex = 0.6, font = 2)
+text(-0.7, 57, "Study weight", cex = 0.6, font = 2)
+text(-2.05, 58, "N participants", cex = 0.6, font = 2)
 
-text(-3.15, 50.3, "0-1 years", cex = 0.6, font = 2)
-text(-3.15, 38.3, "2-3 years", cex = 0.6, font = 2)
-text(-3.15, 27.3, "4-7 years", cex = 0.6, font = 2)
-text(-3.12, 15.3, "8-13 years", cex = 0.6, font = 2)
+text(-3.15, 54.3, "0-1 years", cex = 0.6, font = 2)
+text(-3.15, 41.3, "2-3 years", cex = 0.6, font = 2)
+text(-3.15, 29.3, "4-7 years", cex = 0.6, font = 2)
+text(-3.12, 16.3, "8-13 years", cex = 0.6, font = 2)
 text(-3.10, 3.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = area_dep.meta$bmi_24$area_dep3, row = 40)
-polyWrap(meta = area_dep.meta$bmi_48$area_dep3, row = 29)
-polyWrap(meta = area_dep.meta$bmi_96$area_dep3, row = 17)
+polyWrap(meta = area_dep.meta$bmi_24$area_dep3, row = 43)
+polyWrap(meta = area_dep.meta$bmi_48$area_dep3, row = 31)
+polyWrap(meta = area_dep.meta$bmi_96$area_dep3, row = 18)
 polyWrap(meta = area_dep.meta$bmi_168$area_dep3, row = 5)
 polyWrap(meta = area_dep.meta$bmi_215$area_dep3, row = 0)
 
@@ -1105,7 +1121,7 @@ dev.off()
 png(
   file = here("figures", "ndvi_slma_forest.png"), 
   width = word_full, 
-  height = 15, 
+  height = 20, 
   units = "cm",
   res = 300)
 
@@ -1127,27 +1143,26 @@ forest(
   header = c("Age (months)", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3, 2),
-  ylim = c(0, 53),
+  ylim = c(0, 57),
   alim = c(-1, 1), 
   steps = 5, 
   digits = c(2, 2), 
-  rows = c(49:41, 37:30, 26:18, 14:6, 2:1))
+  rows = c(53:44, 40:32, 28:19, 15:6, 2:1))
 
+text(-2, 56, "N participants", cex = 0.6, font = 2)
+text(-1.5, 56, "Study weight", cex = 0.6, font = 2)
 
-text(-2, 52, "N participants", cex = 0.6, font = 2)
-text(-1.5, 52, "Study weight", cex = 0.6, font = 2)
-
-text(-2.77, 50.3, "0-1 years", cex = 0.6, font = 2)
-text(-2.77, 38.3, "2-3 years", cex = 0.6, font = 2)
-text(-2.77, 27.3, "4-7 years", cex = 0.6, font = 2)
-text(-2.75, 15.3, "8-13 years", cex = 0.6, font = 2)
+text(-2.77, 54.3, "0-1 years", cex = 0.6, font = 2)
+text(-2.77, 41.3, "2-3 years", cex = 0.6, font = 2)
+text(-2.77, 29.3, "4-7 years", cex = 0.6, font = 2)
+text(-2.75, 16.3, "8-13 years", cex = 0.6, font = 2)
 text(-2.74, 3.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = ndvi.meta$bmi_24$ndvi300_preg_iqr_s, row = 40)
-polyWrap(meta = ndvi.meta$bmi_48$ndvi300_preg_iqr_s, row = 29)
-polyWrap(meta = ndvi.meta$bmi_96$ndvi300_preg_iqr_s, row = 17)
-polyWrap(meta = ndvi.meta$bmi_168$ndvi300_preg_iqr_s, row = 5)
-polyWrap(meta = ndvi.meta$bmi_215$ndvi300_preg_iqr_s, row = 0)
+polyWrap(meta = ndvi.meta$bmi_24$ndvi300_preg_iqr_c, row = 43)
+polyWrap(meta = ndvi.meta$bmi_48$ndvi300_preg_iqr_c, row = 31)
+polyWrap(meta = ndvi.meta$bmi_96$ndvi300_preg_iqr_c, row = 18)
+polyWrap(meta = ndvi.meta$bmi_168$ndvi300_preg_iqr_c, row = 5)
+polyWrap(meta = ndvi.meta$bmi_215$ndvi300_preg_iqr_c, row = 0)
 
 dev.off()
 
@@ -1157,6 +1172,10 @@ dev.off()
 k_age_ad <- preg_dia_slma.plotdata %>% 
   group_by(age) %>%
   summarise(n = n())
+
+## ---- ALSPAC disclosure issue ------------------------------------------------
+preg_dia_slma_disc.plotdata <- preg_dia_slma.plotdata %>%
+  mutate(count = ifelse(cohort == "alspac" & count == 3, "<5", count))
 
 png(
   file = here("figures", "preg_dia_slma_forest.png"), 
@@ -1168,14 +1187,14 @@ png(
 par(mar=c(5,0,0,0))
 
 forest(
-  x = preg_dia_slma.plotdata  %>% pull(beta), 
-  ci.lb = preg_dia_slma.plotdata %>% pull(ci_5),
-  ci.ub = preg_dia_slma.plotdata %>% pull(ci_95), 
-  slab = preg_dia_slma.plotdata %>% pull(cohort_neat), 
+  x = preg_dia_slma_disc.plotdata  %>% pull(beta), 
+  ci.lb = preg_dia_slma_disc.plotdata %>% pull(ci_5),
+  ci.ub = preg_dia_slma_disc.plotdata %>% pull(ci_95), 
+  slab = preg_dia_slma_disc.plotdata %>% pull(cohort_neat), 
   ilab = cbind(
-    preg_dia_slma.plotdata %>% pull(ref), 
-    preg_dia_slma.plotdata %>% pull(count), 
-    preg_dia_slma.plotdata %>% pull(weight_scaled) %>% round(2)), 
+    preg_dia_slma_disc.plotdata %>% pull(ref), 
+    preg_dia_slma_disc.plotdata %>% pull(count), 
+    preg_dia_slma_disc.plotdata %>% pull(weight_scaled) %>% round(2)), 
   ilab.x = c(-3.0, -2.1, -1.2),
   xlab = "Difference in childhood BMI where preganancy diabetes reported", 
   cex = 0.6, 
@@ -1184,32 +1203,38 @@ forest(
   header = c("Cohort", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-4.0, 3),
-  ylim = c(1, 70),
+  ylim = c(1, 74),
   alim = c(-1, 2), 
   steps = 6, 
   digits = c(2, 2), 
-  rows = c(66:54, 50:38, 34:23, 19:7, 3:1))
+  rows = c(70:57, 53:41, 37:24, 20:7, 3:1))
 
-text(-3.0, 69, "Unexposed", cex = 0.6, font = 2)
-text(-2.1, 69, "Exposed", cex = 0.6, font = 2)
-text(-1.2, 69, "Study weight", cex = 0.6, font = 2)
-text(-2.55, 70, "N participants", cex = 0.6, font = 2)
+text(-3.0, 73, "Unexposed", cex = 0.6, font = 2)
+text(-2.1, 73, "Exposed", cex = 0.6, font = 2)
+text(-1.2, 73, "Study weight", cex = 0.6, font = 2)
+text(-2.55, 74, "N participants", cex = 0.6, font = 2)
 
-text(-3.67, 67.3, "0-1 years", cex = 0.6, font = 2)
-text(-3.67, 51.3, "2-3 years", cex = 0.6, font = 2)
-text(-3.67, 35.3, "4-7 years", cex = 0.6, font = 2)
-text(-3.65, 20.3, "8-13 years", cex = 0.6, font = 2)
+text(-3.67, 71.3, "0-1 years", cex = 0.6, font = 2)
+text(-3.67, 54.3, "2-3 years", cex = 0.6, font = 2)
+text(-3.67, 38.3, "4-7 years", cex = 0.6, font = 2)
+text(-3.65, 21.3, "8-13 years", cex = 0.6, font = 2)
 text(-3.63, 4.3, "14-17 years", cex = 0.6, font = 2)
 
-polyWrap(meta = preg_dia.meta$bmi_24$preg_dia1, row = 53)
-polyWrap(meta = preg_dia.meta$bmi_48$preg_dia1, row = 37)
-polyWrap(meta = preg_dia.meta$bmi_96$preg_dia1, row = 22)
+polyWrap(meta = preg_dia.meta$bmi_24$preg_dia1, row = 56)
+polyWrap(meta = preg_dia.meta$bmi_48$preg_dia1, row = 40)
+polyWrap(meta = preg_dia.meta$bmi_96$preg_dia1, row = 23)
 polyWrap(meta = preg_dia.meta$bmi_168$preg_dia1, row = 6)
 polyWrap(meta = preg_dia.meta$bmi_215$preg_dia1, row = 0)
 
 dev.off()
 
-## Ok, get n cases in here rather than n total. Or both.
+
+
+
+
+
+
+
 
 ################################################################################
 # Sex-stratified figures  
@@ -1980,100 +2005,304 @@ text(-2.68, 3.3, "14-17 years", cex = 0.6, font = 2)
 
 dev.off()
 
-
-
-
-
-
-
-
-
 ################################################################################
-# MoBa & DNBC
-################################################################################
-################################################################################
-# Prepare data  
+# GDM sensitivity plot  
 ################################################################################
 
-## ---- Maternal education -----------------------------------------------------
-mat_ed_r.pdata <- mat_ed_remove.fit$ipd %>%
-  map(dh.lmTab, type = "ipd", ci_format = "separate", direction = "wide") %>%
+## ---- Get estimates ----------------------------------------------------------
+gdm_sens <- tribble(
+  ~cohort, ~age, ~est, ~lowci, ~uppci,
+  "alspac", "0_1", 1.00, -0.15, 2.16,
+  "bib", "0_1", -0.29, -0.42, -0.16,
+  "dnbc", "0_1", -0.10, -0.20, 0.01,
+  "eden", "0_1", -0.06, -0.35, -0.22,
+  "gecko", "0_1", 0.38, 0.13, 0.62,
+  "genr", "0_1", 0.26, -0.12, 0.64,
+  "inma", "0_1", 0.20, -0.01, 0.41,
+  "moba", "0_1", -0.05, -0.15, 0.06,
+  "ninfea", "0_1", -0.02, -0.16, 0.11,
+  "raine", "0_1", -0.21, -0.50, 0.09,
+  "rhea", "0_1", 0.26, -0.01, 0.53,
+  "sws", "0_1", -0.01, -0.33, 0.31, 
+  "alspac", "2_3", 0.39, -0.66, 1.44,
+  "bib", "2_3", -0.02, 0.21, 0.16,
+  "eden", "2_3", 0.00, -0.20, 0.20,
+  "elfe", "2_3", 0.01, -0.08, 0.09,
+  "gecko", "2_3", 0.02, -0.26, 0.29,
+  "genr", "2_3", 0.31, -0.03, 0.66,
+  "inma", "2_3", -0.00, -0.28, 0.27,
+  "moba", "2_3", -0.02, -0.18, 0.14,
+  "ninfea", "2_3", -0.49, -0.98, 0.00,
+  "raine", "2_3", 0.08, -0.53, 0.69,
+  "rhea", "2_3", -0.02, -0.40, 0.35,
+  "sws", "2_3", -0.07, -0.41, 0.26,
+  "alspac", "4_7", 0.00, -0.06, 0.06,
+  "bib", "4_7", -0.07, -0.22, 0.08, 
+  "dnbc", "4_7", 0.01, -0.12, 0.13,
+  "eden", "4_7", 0.09, -0.12, 0.29,
+  "elfe", "4_7", -0.09, -0.17, -0.00,
+  "gecko", "4_7", 0.07, -0.19, 0.32,
+  "genr", "4_7", 0.05, -0.23, 0.32,
+  "inma", "4_7", -0.03, -0.28, 0.22,
+  "moba", "4_7", 0.10, -0.05, 0.25,
+  "ninfea", "4_7", -0.10, -0.24, 0.04,
+  "raine", "4_7", 0.20, -0.12, 0.52,
+  "rhea", "4_7", -0.18, -0.49, 0.12,
+  "sws", "4_7", 0.20, -0.17, 0.57,
+  "alspac", "8_13", -0.25, -0.72, 0.23,
+  "bib", "8_13", 0.16, -0.10, 0.42,
+  "dnbc", "8_13", 0.07, -0.05, 0.18,
+  "eden", "8_13", 0.00, -0.29, 0.29,
+  "elfe", "8_13", -0.00, -0.29, 0.29,
+  "gecko", "8_13", 0.10, -0.20, 0.41,
+  "genr", "8_13", 0.20, -0.10, 0.51,
+  "inma", "8_13", 0.10, -0.26, 0.46,
+  "moba", "8_13", 0.19, 0.01, 0.37,
+  "ninfea", "8_13", 0.22, -0.11, 0.54,
+  "raine", "8_13", 0.33, -0.05, 0.70,
+  "rhea", "8_13", 0.27, -0.21, 0.74,
+  "sws", "8_13", 0.15, -0.38, 0.68) %>%
+  mutate(se = (uppci - lowci) / 3.92)
+
+gdm_coh <- c("bib", "eden")
+
+gdm_test <- gdm_sens %>% dplyr::filter(!cohort %in% gdm_coh)
+gdm_no_test <- gdm_sens %>% dplyr::filter(cohort %in% gdm_coh)
+
+metaGroup <- function(x){
+  
+x %>%
+  group_by(age) %>%
+  group_split %>%
+  map(function(x){
+    
+    meta <- rma.uni(yi = x$est, sei = x$se)
+    out <- tibble(
+      est = meta$beta[1, 1],
+      lowci = meta$ci.lb,
+      uppci = meta$ci.ub)
+    
+    return(out)
+    
+  }) 
+}
+
+ages <- c("0_1", "2_3", "4_7", "8_13")
+
+gdm_test.pdata <- metaGroup(gdm_test) %>% 
+  set_names(ages) %>% 
   bind_rows(.id = "age") %>%
+  mutate(type = "test")
+
+gdm_no_test.pdata <- metaGroup(gdm_no_test) %>% 
+  set_names(ages) %>% 
+  bind_rows(.id = "age") %>%
+  mutate(type = "no_test")
+
+gdm_ns <- tibble(
+  age = ages,
+  exposed_tot = c(3105, 1384, 2148, 1120),
+  unexposed_tot = c(165422, 66498, 117082, 92925),
+  exposed_test = c(428, 268, 350, 187),
+  unexposed_test = c(3287, 2287, 2580, 1518),
+  exposed_no_test = exposed_tot - exposed_test,
+  unexposed_no_test = unexposed_tot - unexposed_test)
+
+gdm_sens.pdata <- bind_rows(gdm_test.pdata, gdm_no_test.pdata) %>%
+  mutate(
+    exposed = c(428, 268, 350, 187, 2677, 1116, 1798, 933),
+    unexposed = c(3287, 2287, 2580, 1518, 162135, 64211, 114502, 91407))
+
+
+################################################################################
+# REVISED MAIN PLOTS  
+################################################################################
+## ---- Combined Ns ------------------------------------------------------------
+ns_comb_sel <- sens_cat %>%
+  set_names(sens_n.ref$variable) %>%
+  
+  map(function(x){
+    
+    x$output.list$TABLES.COMBINED_all.sources_counts %>%
+      as_tibble(rownames = "category") %>%
+      dplyr::select(category, "1") %>%
+      dplyr::rename(count = "1")
+  }) %>%
+  bind_rows(.id = "variable") %>%
+  mutate(cohort = "combined") %>%
+  separate(
+    col = variable, 
+    sep = "_zscores.", 
+    into = c("exposure", "age")) %>%
+  mutate(age = str_remove(age, pattern = "_s")) %>%
+  mutate(
+    age = factor(
+      age, 
+      levels = rev(age_orig_days),
+      labels = rev(age_new),
+      ordered = TRUE)) %>%
+  dplyr::filter(category != "NA") %>%
+  mutate(variable = case_when(
+    exposure == "edu_m" & category == "1" ~ "High education (ref)",
+    exposure == "edu_m" & category == "2" ~ "Medium education (ref = high)",
+    exposure == "edu_m" & category == "3" ~ "Low education (ref = high)",
+    exposure == "a_d_s" & category == "1" ~ "Low deprivation (ref)",
+    exposure == "a_d_s" & category == "2" ~ "Medium deprivation (ref = low)",
+    exposure == "a_d_s" & category == "3" ~ "High deprivation (ref = low)", 
+    exposure == "p_d_s" & category == "0" ~ "No GDM (ref)",
+    exposure == "p_d_s" & category == "1" ~ "preg_dia1")) 
+
+################################################################################
+# Maternal education  
+################################################################################
+
+## ---- Main results -----------------------------------------------------------
+mat_ed_ipd_main.pdata <- mat_ed.fit$ipd %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  mutate(type = "main") %>%
   prepCatPlotdata(
     lev_1_name = "edu_m2",
     lev_1_lab = "Medium education (ref = high)",
     lev_2_name = "edu_m3",
     lev_2_lab = "Low education (ref = high)") %>%
-  mutate(type = "Removed")
-
-mat_ed_rem.pdata <- mat_ed_ipd.plotdata %>%
-  mutate(type = "Full") %>%
-  bind_rows(., mat_ed_r.pdata) %>%
-  arrange(variable, desc(age), type)
-
-## ---- Area deprivation -------------------------------------------------------
-area_dep_r.pdata <- area_dep_remove.fit$ipd %>% 
-  map(dh.lmTab, type = "ipd", ci_format = "separate", direction = "wide") %>%
+  left_join(., refN("High education (ref)"), by = "age") %>%
+  left_join(., ns_cat_all %>% dplyr::filter(cohort == "combined"), 
+            ord_cat_dum, by = c("age", "variable")) 
+  
+## ---- Sensitivity ------------------------------------------------------------
+mat_ed_ipd_sens.pdata <- mat_ed_sel.fit %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
   bind_rows(.id = "age") %>%
+  mutate(type = "sens") %>%
+  prepCatPlotdata(
+    lev_1_name = "edu_m2",
+    lev_1_lab = "Medium education (ref = high)",
+    lev_2_name = "edu_m3",
+    lev_2_lab = "Low education (ref = high)") %>%
+  left_join(., refN("High education (ref)", ns_comb_sel), by = "age") %>%
+  left_join(., ns_comb_sel, by = c("age", "variable"))
+
+ns_cat_all %>% dplyr::filter(cohort == "combined") %>% print(n = Inf)
+
+## ---- Combined ---------------------------------------------------------------
+mat_ed_ipd.pdata <- bind_rows(mat_ed_ipd_main.pdata, mat_ed_ipd_sens.pdata) %>%
+  arrange(variable, desc(age)) %>%
+  mutate(age = ifelse(type == "sens", "", as.character(age)))
+
+################################################################################
+# Area deprivation  
+################################################################################
+
+## ---- Main results -----------------------------------------------------------
+area_dep_ipd_main.pdata <- area_dep.fit$ipd %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  mutate(type = "main") %>%
   prepCatPlotdata(
     lev_1_name = "area_dep2",
     lev_1_lab = "Medium deprivation (ref = low)",
     lev_2_name = "area_dep3",
     lev_2_lab = "High deprivation (ref = low)") %>%
-  mutate(type = "Removed")
+  left_join(., refN("High education (ref)"), by = "age") %>%
+  left_join(., ns_cat_all %>% dplyr::filter(cohort == "combined"), 
+            ord_cat_dum, by = c("age", "variable")) 
 
-area_dep_rem.pdata <- area_dep_ipd.plotdata %>%
-  mutate(type = "Full") %>%
-  bind_rows(., area_dep_r.pdata) %>%
-  arrange(variable, desc(age), type)
-
-
-## ---- NDVI -------------------------------------------------------------------
-ndvi_r.pdata <- ndvi_remove.fit$ipd %>% 
-  map(dh.lmTab, type = "ipd", ci_format = "separate", direction = "wide") %>%
+## ---- Sensitivity ------------------------------------------------------------
+area_dep_ipd_sens.pdata <- area_dep_sel.fit %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
   bind_rows(.id = "age") %>%
-  filter(variable == "ndvi") %>%
+  mutate(type = "sens") %>%
+  prepCatPlotdata(
+    lev_1_name = "area_dep2",
+    lev_1_lab = "Medium deprivation (ref = low)",
+    lev_2_name = "area_dep3",
+    lev_2_lab = "High deprivation (ref = low)") %>%
+  left_join(., refN("High education (ref)", ns_comb_sel), by = "age") %>%
+  left_join(., ns_comb_sel, by = c("age", "variable"))
+
+area_dep_ipd.pdata <- bind_rows(area_dep_ipd_main.pdata, area_dep_ipd_sens.pdata) %>%
+  arrange(variable, desc(age)) %>%
+  mutate(age = ifelse(type == "sens", "", as.character(age)))
+
+################################################################################
+# NDVI  
+################################################################################
+
+## ---- Main results -----------------------------------------------------------
+ndvi_ipd_main.pdata <- ndvi.fit$ipd %>% 
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  dplyr::filter(variable == "ndvi300_preg_iqr_c") %>%
+  mutate(type = "main")
+
+## ---- Sensitivity ------------------------------------------------------------
+ndvi_ipd_sens.pdata <- ndvi_sel.fit %>% 
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  dplyr::filter(variable == "ndvi300_preg_iqr_c") %>%
+  mutate(type = "sens")
+  
+ndvi_ipd.pdata <- bind_rows(ndvi_ipd_main.pdata, ndvi_ipd_sens.pdata) %>%  
   mutate(
     age = factor(
       age, 
       levels = rev(age_orig),
       labels = rev(age_new),
       ordered = TRUE)) %>%
-  mutate(
-    variable = "NDVI", 
-    type = "Removed")     
-
-ndvi_rem.pdata <- ndvi_ipd.plotdata %>%
-  mutate(type = "Full") %>%
-  bind_rows(., ndvi_r.pdata) %>%
-  arrange(variable, desc(age), type)
-
-## ---- Pregnancy diabetes -----------------------------------------------------
-preg_dia_r.pdata <- preg_dia_remove.fit$ipd %>%
-  map(dh.lmTab, type = "ipd", ci_format = "separate", direction = "wide") %>%
-  bind_rows(.id = "age") %>%
-  filter(variable == "preg_dia1") %>%
-  mutate(
-    age = factor(
-      age, 
-      levels = rev(age_orig),
-      labels = rev(age_new),
-      ordered = TRUE)) %>%
-  mutate(
-    variable = "Pregnancy diabetes reported", 
-    type = "Removed")    
-
-preg_dia_rem.pdata <- preg_dia_ipd.plotdata %>%
-  mutate(type = "Full") %>%
-  bind_rows(., preg_dia_r.pdata) %>%
-  arrange(variable, desc(age), type)
+  mutate(variable = "NDVI") %>%
+  arrange(desc(age), type) %>%
+  mutate(age = ifelse(type == "sens", "", as.character(age)))
 
 
 ################################################################################
-# Figure S9: Maternal education with and without MoBa & DNBC   
+# Pregnancy diabetes  
+################################################################################
+
+## ---- Main results -----------------------------------------------------------
+preg_dia_main.pdata <- preg_dia.fit$ipd %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  dplyr::filter(variable == "preg_dia1") %>%
+  mutate(
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new),
+      ordered = TRUE)) %>%
+  left_join(., refN("preg_dia1"), by = "age") %>%
+  left_join(., ns_cat_all %>% dplyr::filter(cohort == "combined"), 
+            ord_cat_dum, by = c("age", "variable")) %>%
+  mutate(type = "main")
+
+## ---- Sensitivity ------------------------------------------------------------
+preg_dia_sens.pdata <- preg_dia_sel.fit %>%
+  map(dh.lmTab, type = "glm_ipd", ci_format = "separate", direction = "wide") %>%
+  bind_rows(.id = "age") %>%
+  dplyr::filter(variable == "preg_dia1") %>%
+  mutate(
+    age = factor(
+      age, 
+      levels = rev(age_orig),
+      labels = rev(age_new),
+      ordered = TRUE)) %>%
+  left_join(., refN("preg_dia1", ns_comb_sel), by = "age", ) %>%
+  left_join(., ns_comb_sel, by = c("age", "variable")) %>%
+  mutate(type = "sens")
+
+preg_dia.pdata <- bind_rows(preg_dia_main.pdata, preg_dia_sens.pdata) %>%
+  arrange(desc(age), type) %>%
+  mutate(age = ifelse(type == "sens", "", as.character(age)))
+
+
+################################################################################
+# Plots  
+################################################################################
+################################################################################
+# Maternal education  
 ################################################################################
 png(
-  file = here("figures", "mat_ed_rem_forest.png"), 
+  file = here("figures", "mat_ed_ipd_sel.png"), 
   width = word_full, 
   height = 15, 
   units = "cm",
@@ -2082,48 +2311,47 @@ png(
 par(mar=c(5,0,0,0))
 
 forest(
-  x = mat_ed_rem.pdata %>% pull(est), 
-  ci.lb = mat_ed_rem.pdata %>% pull(lowci),
-  ci.ub = mat_ed_rem.pdata %>% pull(uppci), 
-  slab = mat_ed_rem.pdata %>% pull(age),
+  x = mat_ed_ipd.pdata %>% pull(est), 
+  ci.lb = mat_ed_ipd.pdata %>% pull(lowci),
+  ci.ub = mat_ed_ipd.pdata %>% pull(uppci), 
+  slab = mat_ed_ipd.pdata %>% pull(age), 
   xlab = "Difference in childhood BMI by category of maternal education", 
   ilab =  cbind(
-    c(
-      rbind(
-        rep(mat_ed_remove.fit$ipd %>% map_int(function(x){x$Nvalid}), 2),
-        rep(mat_ed.fit$ipd %>% map_int(function(x){x$Nvalid}), 2))
-    ),
-    c(
-      rbind(
-        rep(mat_ed_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2),
-        rep(mat_ed.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2)))
-  ),
-  ilab.xpos = c(-2, -1.2),
+    mat_ed_ipd.pdata %>% pull(ref),
+    mat_ed_ipd.pdata %>% pull(count),
+    c(rbind(
+      unlist(mat_ed.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})), 
+      unlist(mat_ed_sel.fit %>% map(function(x){length(x$disclosure.risk)}))))), 
+  ilab.xpos = c(-2.5, -1.6, -0.7),
   cex = 0.8, 
   cex.axis = 0.8,
-  header = c("Age (months)", "Estimate [95% CI]"), 
+  header = c("Age", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3),
-  ylim = c(1, 27),
-  alim = c(-1, 1.5), 
-  steps = 6, 
+  ylim = c(1, 34),
+  alim = c(-0.5, 1.5), 
+  steps = 5, 
   digits = c(2, 2), 
-  rows = c(22:13, 10:1),
-  col = rep(c("#264653", "#F4A261"), 10))
+  rows = c(13, 12, 10.5, 9.5, 8, 7, 5.5, 4.5, 3, 2, 28.5, 27.5, 26, 25, 23.5, 
+           22.5, 21, 20, 18.5, 17.5), 
+  psize = 0.8, 
+  pch = rep(c(15, 0), 10))
 
-text(-2, 26, "N subjects", cex = 0.8, font = 2)
-text(-1.2, 26, "N studies", cex = 0.8, font = 2)
+text(-2.5, 33, "Ref (high)", cex = 0.8, font = 2)
+text(-1.6, 33, "Exposed", cex = 0.8, font = 2)
+text(-0.7, 33, "N studies", cex = 0.8, font = 2)
+text(-2.05, 34.5, "N participants", cex = 0.8, font = 2)
 
-text(-2.87, 23.5, "Medium education", cex = 0.8, font = 2)
-text(-2.98, 11.5, "Low education", cex = 0.8, font = 2)
+text(-2.92, 30.3, "Medium education", cex = 0.8, font = 2)
+text(-3.02, 14.8, "Low education", cex = 0.8, font = 2)
 
 dev.off()
 
 ################################################################################
-# Figure S10: Area deprivation with and without MoBa & DNBC   
+# Area deprivation  
 ################################################################################
 png(
-  file = here("figures", "area_dep_rem_forest.png"), 
+  file = here("figures", "area_dep_ipd_sel.png"), 
   width = word_full, 
   height = 15, 
   units = "cm",
@@ -2132,48 +2360,47 @@ png(
 par(mar=c(5,0,0,0))
 
 forest(
-  x = area_dep_rem.pdata %>% pull(est), 
-  ci.lb = area_dep_rem.pdata %>% pull(lowci),
-  ci.ub = area_dep_rem.pdata %>% pull(uppci), 
-  slab = area_dep_rem.pdata %>% pull(age),
+  x = area_dep_ipd.pdata %>% pull(est), 
+  ci.lb = area_dep_ipd.pdata %>% pull(lowci),
+  ci.ub = area_dep_ipd.pdata %>% pull(uppci), 
+  slab = area_dep_ipd.pdata %>% pull(age), 
   xlab = "Difference in childhood BMI by category of maternal education", 
   ilab =  cbind(
-    c(
-      rbind(
-        rep(area_dep_remove.fit$ipd %>% map_int(function(x){x$Nvalid}), 2),
-        rep(area_dep.fit$ipd %>% map_int(function(x){x$Nvalid}), 2))
-    ),
-    c(
-      rbind(
-        rep(area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2),
-        rep(area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 2)))
-  ),
-  ilab.xpos = c(-2, -1.2),
+    area_dep_ipd.pdata %>% pull(ref),
+    area_dep_ipd.pdata %>% pull(count),
+    c(rbind(
+      unlist(area_dep.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})), 
+      unlist(area_dep_sel.fit %>% map(function(x){length(x$disclosure.risk)}))))), 
+  ilab.xpos = c(-2.5, -1.6, -0.7),
   cex = 0.8, 
   cex.axis = 0.8,
-  header = c("Age (months)", "Estimate [95% CI]"), 
+  header = c("Age", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-3.5, 3),
-  ylim = c(1, 22),
-  alim = c(-1, 1.2), 
-  steps = 6, 
+  ylim = c(1, 34),
+  alim = c(-0.5, 1.5), 
+  steps = 5, 
   digits = c(2, 2), 
-  rows = c(18:11, 8:1),
-  col = rep(c("#264653", "#F4A261"), 8))
+  rows = c(13, 12, 10.5, 9.5, 8, 7, 5.5, 4.5, 3, 2, 28.5, 27.5, 26, 25, 23.5, 
+           22.5, 21, 20, 18.5, 17.5), 
+  psize = 0.8, 
+  pch = rep(c(15, 0), 10))
 
-text(-2, 21, "N subjects", cex = 0.8, font = 2)
-text(-1.2, 21, "N studies", cex = 0.8, font = 2)
+text(-2.5, 33, "Ref (high)", cex = 0.8, font = 2)
+text(-1.6, 33, "Exposed", cex = 0.8, font = 2)
+text(-0.7, 33, "N studies", cex = 0.8, font = 2)
+text(-2.05, 34.5, "N participants", cex = 0.8, font = 2)
 
-text(-2.87, 9.2, "Medium education", cex = 0.8, font = 2)
-text(-2.98, 19.2, "Low education", cex = 0.8, font = 2)
+text(-2.88, 30.3, "Medium deprivation", cex = 0.8, font = 2)
+text(-2.96, 14.8, "High deprivation", cex = 0.8, font = 2)
 
 dev.off()
 
 ################################################################################
-# Figure S11: NDVI with and without MoBa & DNBC   
+# NDVI  
 ################################################################################
 png(
-  file = here("figures", "ndvi_rem_forest.png"), 
+  file = here("figures", "ndvi_ipd_sel.png"), 
   width = word_full, 
   height = 10, 
   units = "cm",
@@ -2182,86 +2409,85 @@ png(
 par(mar=c(5,0,0,0))
 
 forest(
-  x = ndvi_rem.pdata %>% pull(est), 
-  ci.lb = ndvi_rem.pdata %>% pull(lowci),
-  ci.ub = ndvi_rem.pdata %>% pull(uppci), 
-  slab = ndvi_rem.pdata %>% pull(age), 
-  xlab = "Difference in childhood BMI by one unit change NDVI", 
+  x = ndvi_ipd.pdata %>% pull(est), 
+  ci.lb = ndvi_ipd.pdata %>% pull(lowci),
+  ci.ub = ndvi_ipd.pdata %>% pull(uppci), 
+  slab = ndvi_ipd.pdata %>% pull(age), 
+  xlab = "Difference in childhood BMI by interquartile change NDVI", 
   ilab =  cbind(
-    c(
-      rbind(
-        area_dep_remove.fit$ipd %>% map_int(function(x){x$Nvalid}),
-        area_dep.fit$ipd %>% map_int(function(x){x$Nvalid}))
-    ),
-    c(
-      rbind(
-        area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}),
-        area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)})))
-  ),
+    c(rbind(
+      ndvi.fit[[1]] %>% map_int(function(x){x$Nvalid}), 
+      ndvi_sel.fit %>% map_int(function(x){x$Nvalid}))),
+    c(rbind(
+      unlist(ndvi.fit[[1]] %>% map(function(x){length(x$disclosure.risk)})),
+      unlist(ndvi_sel.fit %>% map(function(x){length(x$disclosure.risk)}))))),
   ilab.xpos = c(-2.5, -1.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-4.0, 2.5),
-  ylim = c(0, 11),
+  ylim = c(13, 24),
   alim = c(-1.5, 1), 
   steps = 6, 
   digits = c(2, 2), 
-  rows = 8:1,
-  col = rep(c("#264653", "#F4A261"), 4))
+  rows = c(21, 20.2, 19.2, 18.4, 17.4, 16.6, 15.6, 14.8, 13.8, 13), 
+  psize = 0.8, 
+  pch = rep(c(15, 0), 5))
 
-text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
-text(-1.7, 10, "N studies", cex = 0.8, font = 2)
+text(-2.5, 24, "N participants", cex = 0.8, font = 2)
+text(-1.7, 24, "N studies", cex = 0.8, font = 2)
 
 dev.off()
 
 ################################################################################
-# Figure S12: Pregnanacy diabetes with and without MoBa & DNBC   
+# Pregnancy diabetes  
 ################################################################################
 png(
-  file = here("figures", "preg_dia_rem_forest.png"), 
+  file = here("figures", "preg_dia_ipd_sens.png"), 
   width = word_full, 
-  height = 12, 
+  height = 10, 
   units = "cm",
   res = 300)
 
 par(mar=c(5,0,0,0))
 
 forest(
-  x = preg_dia_rem.pdata %>% pull(est), 
-  ci.lb = preg_dia_rem.pdata %>% pull(lowci),
-  ci.ub = preg_dia_rem.pdata %>% pull(uppci), 
-  slab = preg_dia_rem.pdata %>% pull(age), 
+  x = preg_dia.pdata %>% pull(est), 
+  ci.lb = preg_dia.pdata %>% pull(lowci),
+  ci.ub = preg_dia.pdata %>% pull(uppci), 
+  slab = preg_dia.pdata %>% pull(age), 
   xlab = "Difference in childhood BMI where pregnancy diabetes reported", 
   ilab =  cbind(
-    c(
-      rbind(
-        area_dep_remove.fit$ipd %>% map_int(function(x){x$Nvalid}),
-        area_dep.fit$ipd %>% map_int(function(x){x$Nvalid}))
-    ),
-    c(
-      rbind(
-        area_dep_remove.fit$ipd %>% map(function(x){length(x$disclosure.risk)}),
-        area_dep.fit$ipd %>% map(function(x){length(x$disclosure.risk)})))
-  ),
-  ilab.xpos = c(-2.5, -1.7),
+    preg_dia.pdata %>% pull(ref),
+    preg_dia.pdata %>% pull(count),
+    c(rbind(
+      preg_dia.fit$ipd %>% map(function(x){length(x$disclosure.risk)}), 
+      preg_dia_sel.fit %>% map(function(x){length(x$disclosure.risk)})))),
+  ilab.xpos = c(-2.5, -1.6, -0.7),
   cex = 0.8, 
   cex.axis = 0.8,
   header = c("Age (months)", "Estimate [95% CI]"), 
   refline = 0, 
   xlim = c(-4.0, 2.5),
-  ylim = c(0, 11),
-  alim = c(-1.5, 1), 
-  steps = 6, 
+  ylim = c(8, 20),
+  alim = c(-0.5, 1), 
+  steps = 4, 
   digits = c(2, 2), 
-  rows = 8:1,
-  col = rep(c("#264653", "#F4A261"), 4))
+  rows = c(17, 16, 15, 14, 13, 12, 11, 10, 9, 8), 
+  psize = 0.8, 
+  pch = rep(c(15, 0), 5))
 
-text(-2.5, 10, "N subjects", cex = 0.8, font = 2)
-text(-1.7, 10, "N studies", cex = 0.8, font = 2)
+text(-2.5, 19, "Unexposed", cex = 0.8, font = 2)
+text(-1.6, 19, "Exposed", cex = 0.8, font = 2)
+text(-0.7, 19, "N studies", cex = 0.8, font = 2)
+text(-2.05, 20, "N participants", cex = 0.8, font = 2)
 
 dev.off()
+
+
+
+
 
 
 
