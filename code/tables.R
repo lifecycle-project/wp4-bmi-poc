@@ -241,6 +241,9 @@ cov_b.tab <- cov.tab %>%
 write_csv(cov_a.tab, file = here("tables", "covariates_a.csv"))
 write_csv(cov_b.tab, file = here("tables", "covariates_b.csv"))
 
+cov_b.tab %>% dplyr::select(-preg_ht_1, preg_ht_NA) %>%
+  print(n = Inf)
+
 ################################################################################
 # Table S6: BMI descriptives   
 ################################################################################

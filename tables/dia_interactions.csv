@@ -1,0 +1,6 @@
+age,variable,est,se,lowci,uppci,pvalue,n_obs
+bmi_24,preg_dia1:sex2,0,0.04,-0.08,0.08,0.98,164075
+bmi_48,preg_dia1:sex2,-0,0.06,-0.12,0.11,0.94,66737
+bmi_96,preg_dia1:sex2,0.11,0.05,0.02,0.21,0.02,119839
+bmi_168,preg_dia1:sex2,-0.08,0.07,-0.21,0.05,0.24,93794
+bmi_215,preg_dia1:sex2,0.14,0.26,-0.37,0.64,0.6,9798

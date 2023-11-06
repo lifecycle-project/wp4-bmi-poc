@@ -73,6 +73,7 @@ descriptives <- list(
   
 save.image()
 
+descriptives_cov$continuous %>% print(n = Inf)
 ################################################################################
 # 2. Get descriptives for excluded sample 
 ################################################################################
@@ -122,6 +123,7 @@ descriptives$continuous <- descriptives$continuous %>%
 
 save.image()
 
+ds.summary("prepreg_bmi_o_f")
 ################################################################################
 # 3. Model definitions  
 ################################################################################

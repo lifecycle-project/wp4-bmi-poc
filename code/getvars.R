@@ -587,6 +587,11 @@ ds.Boole(
   newobj = "prepreg_bmi_o"
 )
 
+ds.summary("prepreg_bmi")
+ds.table("prepreg_bmi_u")
+ds.table("prepreg_bmi_o")
+ds.summary("prepreg_bmi_u_f")
+
 ## ---- Parity -----------------------------------------------------------------
 
 # We need to recode parity as a binary variable as there are issues later with 
